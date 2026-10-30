@@ -39,7 +39,7 @@ GoRouter createAppRouter({
         builder: (context, state) => OnboardingScreen(
           onFinished: () async {
             await onboardingPrefs.markSeen();
-            if (context.mounted) context.go(AppRoutes.home);
+            if (context.mounted) context.go(AppRoutes.login);
           },
         ),
       ),
