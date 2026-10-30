@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kampus_kayip_esya/features/onboarding/onboarding_prefs.dart';
-import 'package:kampus_kayip_esya/main.dart';
+import 'package:kampus_kayip_esya/app/app.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future<OnboardingPrefs> _prefs([Map<String, Object> values = const {}]) async {
