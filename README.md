@@ -46,6 +46,8 @@ lib/
 ├── main.dart                 # giriş noktası
 ├── app/
 │   ├── app.dart              # MaterialApp.router, tema
+│   ├── config.dart           # API_BASE adresi, zaman aşımı
+│   ├── providers/            # Riverpod: storage, ApiClient, repository, oturum
 │   ├── router/
 │   │   ├── app_routes.dart   # tüm rota yolları (sabitler)
 │   │   └── app_router.dart   # go_router yapılandırması, yönlendirmeler
@@ -53,6 +55,7 @@ lib/
 │   └── theme/                # renkler, açık/koyu tema
 ├── data/
 │   ├── models/               # freezed modeller (User, Item, Claim, ...)
+│   ├── api/                  # ApiClient (dio), AuthInterceptor, AppException
 │   ├── mock/                 # API hazır olana kadar örnek veri
 │   └── repositories/         # veri erişim arayüzleri ve uygulamaları
 ├── features/                 # her ekran kendi klasöründe
@@ -61,6 +64,37 @@ lib/
 └── shared/widgets/           # birden çok ekranda kullanılan bileşenler
 test/                         # lib/ ile aynı düzende testler
 ```
+
+## API adresi
+
+Uygulama BLM4581 projesindeki ortak Web API'ye bağlanır. Adres derleme anında
+verilir (varsayılan `http://localhost:5080`):
+
+```bash
+# Simülatör (API aynı Mac'te)
+flutter run --dart-define=API_BASE=http://localhost:5080
+# Gerçek iPhone (Mac'in yerel IP'si: ipconfig getifaddr en0)
+flutter run --dart-define=API_BASE=http://192.168.1.20:5080
+```
+
+Telefon ve bilgisayar aynı ağda olmalı; web tarafında Kestrel `http://0.0.0.0:5080`
+dinlemeli.
+
+## Durum yönetimi (Riverpod)
+
+Kökte `ProviderScope` vardır. Temel provider'lar `lib/app/providers/` altında:
+
+| Provider                 | Ne döner                                                  |
+| ------------------------ | --------------------------------------------------------- |
+| `secureStorageProvider`  | `FlutterSecureStorage` (iOS'ta Keychain)                  |
+| `apiClientProvider`      | Tek `Dio` örneği + `AuthInterceptor` (token ekler, 401'de çıkış) |
+| `itemRepositoryProvider` | Şimdilik `MockItemRepository`; API'ye geçiş tek satır     |
+| `authStateProvider`      | Oturum durumu (`AuthState.isLoggedIn`, `user`)            |
+
+Veri ekranları `AsyncNotifier` + ortak `AsyncValueView` kalıbını kullanır
+(örnek: `features/home/item_list_provider.dart`). Repository'ler `DioException`
+yerine `AppException` (`NetworkException`, `ServerException`,
+`ValidationException`, `UnauthorizedException`) fırlatır; mesajlar Türkçedir.
 
 ## Gezinme
 

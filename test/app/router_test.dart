@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kampus_kayip_esya/app/providers/core_providers.dart';
 import 'package:kampus_kayip_esya/app/router/app_router.dart';
 import 'package:kampus_kayip_esya/app/router/app_routes.dart';
 import 'package:kampus_kayip_esya/app/theme/app_theme.dart';
+import 'package:kampus_kayip_esya/data/repositories/mock_item_repository.dart';
 import 'package:kampus_kayip_esya/features/onboarding/onboarding_prefs.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -10,6 +13,15 @@ Future<OnboardingPrefs> _prefs({bool seen = true}) async {
   SharedPreferences.setMockInitialValues({'onboarding_seen': seen});
   return OnboardingPrefs(await SharedPreferences.getInstance());
 }
+
+Widget _scoped(Widget child) => ProviderScope(
+  overrides: [
+    itemRepositoryProvider.overrideWithValue(
+      MockItemRepository(latency: Duration.zero),
+    ),
+  ],
+  child: child,
+);
 
 Future<void> _pumpApp(
   WidgetTester tester, {
@@ -21,29 +33,31 @@ Future<void> _pumpApp(
     initialLocation: initialLocation,
   );
   addTearDown(router.dispose);
-  await tester.pumpWidget(MaterialApp.router(
-    theme: AppTheme.light,
-    routerConfig: router,
-  ));
+  await tester.pumpWidget(
+    _scoped(MaterialApp.router(theme: AppTheme.light, routerConfig: router)),
+  );
   await tester.pumpAndSettle();
 }
 
-Finder _tab(String label) => find.descendant(
-      of: find.byType(NavigationBar),
-      matching: find.text(label),
-    );
+Finder _tab(String label) =>
+    find.descendant(of: find.byType(NavigationBar), matching: find.text(label));
 
-Finder _appBarTitle(String title) => find.descendant(
-      of: find.byType(AppBar),
-      matching: find.text(title),
-    );
+Finder _appBarTitle(String title) =>
+    find.descendant(of: find.byType(AppBar), matching: find.text(title));
 
 void main() {
-  testWidgets('alt menüde 5 sekme var, ana sayfa seçili açılıyor',
-      (tester) async {
+  testWidgets('alt menüde 5 sekme var, ana sayfa seçili açılıyor', (
+    tester,
+  ) async {
     await _pumpApp(tester);
 
-    for (final label in ['Ana Sayfa', 'Ara', 'Yeni İlan', 'Mesajlar', 'Profil']) {
+    for (final label in [
+      'Ana Sayfa',
+      'Ara',
+      'Yeni İlan',
+      'Mesajlar',
+      'Profil',
+    ]) {
       expect(_tab(label), findsOneWidget);
     }
     expect(_appBarTitle('Kampüs Kayıp Eşya'), findsOneWidget);
@@ -70,8 +84,9 @@ void main() {
     }
   });
 
-  testWidgets('zil bildirimler sayfasını alt menünün üstünde açar',
-      (tester) async {
+  testWidgets('zil bildirimler sayfasını alt menünün üstünde açar', (
+    tester,
+  ) async {
     await _pumpApp(tester);
 
     await tester.tap(find.byTooltip('Bildirimler'));
@@ -105,10 +120,9 @@ void main() {
 
     final router = createAppRouter(onboardingPrefs: await _prefs());
     addTearDown(router.dispose);
-    await tester.pumpWidget(MaterialApp.router(
-      theme: AppTheme.dark,
-      routerConfig: router,
-    ));
+    await tester.pumpWidget(
+      _scoped(MaterialApp.router(theme: AppTheme.dark, routerConfig: router)),
+    );
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });
