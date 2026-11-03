@@ -1,10 +1,10 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../data/models/models.dart';
 
-/// İlan fotoğrafı: mock veride asset, API'de ağ adresi. Fotoğraf yoksa veya
-/// yüklenemezse simge gösterir. Hafta 3'te ağ görselleri önbelleğe alınacak
-/// (cached_network_image); yalnızca bu dosya değişir.
+/// İlan fotoğrafı: mock veride asset, API'de ağ adresi (diskte önbelleğe
+/// alınır). Fotoğraf yoksa veya yüklenemezse simge gösterir.
 class ItemPhotoImage extends StatelessWidget {
   const ItemPhotoImage({
     super.key,
@@ -20,18 +20,21 @@ class ItemPhotoImage extends StatelessWidget {
     final photo = this.photo;
     if (photo == null) return const _Fallback(icon: Icons.image_outlined);
 
-    Widget error(BuildContext context, Object error, StackTrace? stack) =>
-        const _Fallback(icon: Icons.broken_image_outlined);
-
-    return photo.isAsset
-        ? Image.asset(photo.url, fit: fit, errorBuilder: error)
-        : Image.network(
-            photo.url,
-            fit: fit,
-            errorBuilder: error,
-            loadingBuilder: (context, child, progress) =>
-                progress == null ? child : const _Fallback(),
-          );
+    if (photo.isAsset) {
+      return Image.asset(
+        photo.url,
+        fit: fit,
+        errorBuilder: (context, error, stack) =>
+            const _Fallback(icon: Icons.broken_image_outlined),
+      );
+    }
+    return CachedNetworkImage(
+      imageUrl: photo.url,
+      fit: fit,
+      placeholder: (context, url) => const _Fallback(),
+      errorWidget: (context, url, error) =>
+          const _Fallback(icon: Icons.broken_image_outlined),
+    );
   }
 }
 

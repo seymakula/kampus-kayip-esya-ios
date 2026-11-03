@@ -56,4 +56,12 @@ void main() {
       expect(data.lengthInBytes, greaterThan(0), reason: photo.url);
     }
   });
+
+  test('since: yalnızca o tarihten sonraki olaylar', () async {
+    final since = DateTime.utc(2026, 10, 27, 12);
+    final res = await repo.getItems(since: since, pageSize: 100);
+    expect(res.items, isNotEmpty);
+    expect(res.items.every((i) => !i.eventDate.isBefore(since)), isTrue);
+    expect(res.totalCount, lessThan(18));
+  });
 }
