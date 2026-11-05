@@ -4,8 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../app/router/app_routes.dart';
 import '../../data/models/models.dart';
-import '../../shared/widgets/async_value_view.dart';
-import '../../shared/widgets/item_card.dart';
+import '../../shared/widgets/paged_item_list_view.dart';
 import 'item_list_provider.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -64,30 +63,13 @@ class _ItemListTabState extends ConsumerState<_ItemListTab>
     final provider = itemListProvider(widget.type);
     final lost = widget.type == ItemType.lost;
 
-    return AsyncValueView(
+    return PagedItemListView(
       value: ref.watch(provider),
-      isEmpty: (items) => items.isEmpty,
+      onRefresh: () => ref.read(provider.notifier).refresh(),
+      onLoadMore: () => ref.read(provider.notifier).loadMore(),
+      onRetry: () => ref.invalidate(provider),
       emptyIcon: lost ? Icons.search_off : Icons.inventory_2_outlined,
       emptyTitle: lost ? 'Kayıp ilanı yok' : 'Bulunan ilanı yok',
-      emptyMessage: 'Yeni ilanlar burada görünecek.',
-      onRetry: () => ref.invalidate(provider),
-      // Hafta 3: sonsuz kaydırma (sayfalı yükleme) bu listeye eklenecek.
-      data: (items) => RefreshIndicator(
-        onRefresh: () => ref.read(provider.notifier).refresh(),
-        child: ListView.separated(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16),
-          itemCount: items.length,
-          separatorBuilder: (context, i) => const SizedBox(height: 12),
-          itemBuilder: (context, i) {
-            final item = items[i];
-            return ItemCard(
-              item: item,
-              onTap: () => context.push(AppRoutes.itemDetail(item.id)),
-            );
-          },
-        ),
-      ),
     );
   }
 }

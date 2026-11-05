@@ -2,32 +2,25 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/providers/core_providers.dart';
 import '../../data/models/models.dart';
+import '../../shared/paging/paged_items.dart';
 
-/// Ana sayfa ilan listesi. Diğer liste ekranları bu kalıbı kopyalar:
-/// `build` ilk sayfayı yükler, ekran `ref.watch(itemListProvider(type))`
-/// ile `AsyncValue<List<Item>>` alır.
+/// Ana sayfa ilan listesi. Ekran `ref.watch(itemListProvider(type))` ile
+/// `AsyncValue<PagedItems>` alır; sonraki sayfa için `loadMore()`.
 ///
 /// `type == null` → tüm ilanlar; Kayıp / Bulunan sekmeleri
 /// `ItemType.lost` / `ItemType.found` ile çağırır.
-class ItemListNotifier extends AsyncNotifier<List<Item>> {
+class ItemListNotifier extends PagedItemsNotifier {
   ItemListNotifier(this.type);
 
   final ItemType? type;
 
   @override
-  Future<List<Item>> build() async {
-    final res = await ref.read(itemRepositoryProvider).getItems(type: type);
-    return res.items;
-  }
-
-  /// Aşağı çekip yenileme ve "Tekrar dene" için.
-  Future<void> refresh() async {
-    ref.invalidateSelf();
-    await future;
-  }
+  Future<PagedResult<Item>> fetchPage(int page) => ref
+      .read(itemRepositoryProvider)
+      .getItems(type: type, page: page, pageSize: PagedItemsNotifier.pageSize);
 }
 
 final itemListProvider =
-    AsyncNotifierProvider.family<ItemListNotifier, List<Item>, ItemType?>(
+    AsyncNotifierProvider.family<ItemListNotifier, PagedItems, ItemType?>(
       ItemListNotifier.new,
     );

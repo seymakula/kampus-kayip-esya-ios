@@ -14,6 +14,7 @@ class MockItemRepository implements ItemRepository {
     String? query,
     int? categoryId,
     int? locationId,
+    DateTime? since,
     int page = 1,
     int pageSize = 10,
   }) async {
@@ -24,6 +25,7 @@ class MockItemRepository implements ItemRepository {
         .where((i) => type == null || i.type == type)
         .where((i) => categoryId == null || i.category.id == categoryId)
         .where((i) => locationId == null || i.location.id == locationId)
+        .where((i) => since == null || !i.eventDate.isBefore(since))
         .where((i) =>
             q == null ||
             q.isEmpty ||

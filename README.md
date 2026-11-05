@@ -80,6 +80,27 @@ flutter run --dart-define=API_BASE=http://192.168.1.20:5080
 Telefon ve bilgisayar aynı ağda olmalı; web tarafında Kestrel `http://0.0.0.0:5080`
 dinlemeli.
 
+Web API çalışmıyorsa uygulama örnek veriyle açılabilir:
+
+```bash
+flutter run --dart-define=USE_MOCK=true
+```
+
+### Kullanılan uçlar (ilanlar)
+
+| İstek                 | Yanıt                                        |
+| --------------------- | -------------------------------------------- |
+| `GET /api/items`      | `{ items, page, pageSize, totalCount }`      |
+| `GET /api/items/{id}` | `Item`                                       |
+| `GET /api/categories` | `Category[]`                                 |
+| `GET /api/locations`  | `Location[]`                                 |
+
+`/api/items` sorgu parametreleri (hepsi isteğe bağlı): `type` (`lost` / `found`),
+`q` (başlık ve açıklamada arama), `categoryId`, `locationId`, `from` (ISO-8601 UTC;
+bu tarihten sonraki olaylar), `page` (1'den başlar), `pageSize` (varsayılan 10).
+Yalnızca yayındaki ilanlar, en yeni önce döner. Fotoğraf adresleri göreli
+(`/uploads/x.jpg`) olabilir; uygulama API adresine göre tamamlar.
+
 ## Durum yönetimi (Riverpod)
 
 Kökte `ProviderScope` vardır. Temel provider'lar `lib/app/providers/` altında:
@@ -88,11 +109,14 @@ Kökte `ProviderScope` vardır. Temel provider'lar `lib/app/providers/` altında
 | ------------------------ | --------------------------------------------------------- |
 | `secureStorageProvider`  | `FlutterSecureStorage` (iOS'ta Keychain)                  |
 | `apiClientProvider`      | Tek `Dio` örneği + `AuthInterceptor` (token ekler, 401'de çıkış) |
-| `itemRepositoryProvider` | Şimdilik `MockItemRepository`; API'ye geçiş tek satır     |
+| `itemRepositoryProvider` | `ApiItemRepository`; `USE_MOCK=true` ile `MockItemRepository` |
 | `authStateProvider`      | Oturum durumu (`AuthState.isLoggedIn`, `user`)            |
 
-Veri ekranları `AsyncNotifier` + ortak `AsyncValueView` kalıbını kullanır
-(örnek: `features/home/item_list_provider.dart`). Repository'ler `DioException`
+Veri ekranları `AsyncNotifier` + ortak `AsyncValueView` kalıbını kullanır.
+İlan listeleri sayfalıdır: `PagedItemsNotifier`'dan türeyen sınıf yalnızca
+`fetchPage(page)` yazar, ekran `PagedItemListView` ile gösterir (aşağı çekip
+yenileme, sona gelince sonraki sayfa). Örnekler: `features/home/item_list_provider.dart`,
+`features/search/search_providers.dart`. Repository'ler `DioException`
 yerine `AppException` (`NetworkException`, `ServerException`,
 `ValidationException`, `UnauthorizedException`) fırlatır; mesajlar Türkçedir.
 

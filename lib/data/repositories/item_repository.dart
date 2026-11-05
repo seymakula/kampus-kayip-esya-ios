@@ -8,6 +8,9 @@ abstract class ItemRepository {
     String? query,
     int? categoryId,
     int? locationId,
+
+    /// Yalnızca bu tarihten sonra kaybolan / bulunan ilanlar.
+    DateTime? since,
     int page = 1,
     int pageSize = 10,
   });

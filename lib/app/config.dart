@@ -11,5 +11,9 @@ const apiBase = String.fromEnvironment(
   defaultValue: 'http://localhost:5080',
 );
 
+/// `--dart-define=USE_MOCK=true` ile API yerine örnek veri kullanılır
+/// (web API çalışmıyorken geliştirme ve demo için).
+const useMockData = bool.fromEnvironment('USE_MOCK');
+
 /// Tüm istekler için bağlanma / yanıt bekleme süresi.
 const apiTimeout = Duration(seconds: 10);

@@ -3,8 +3,10 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../../data/api/api_client.dart';
 import '../../data/api/auth_interceptor.dart';
+import '../../data/repositories/api_item_repository.dart';
 import '../../data/repositories/item_repository.dart';
 import '../../data/repositories/mock_item_repository.dart';
+import '../config.dart';
 import 'auth_provider.dart';
 
 /// iOS'ta Keychain, Android'de EncryptedSharedPreferences.
@@ -28,8 +30,9 @@ final apiClientProvider = Provider<ApiClient>((ref) {
   return client;
 });
 
-/// API hazır olunca (Hafta 3) yalnızca bu satır değişir:
-/// `ApiItemRepository(ref.watch(apiClientProvider))`.
+/// Varsayılan: ortak Web API. `--dart-define=USE_MOCK=true` ile örnek veri.
 final itemRepositoryProvider = Provider<ItemRepository>(
-  (ref) => MockItemRepository(),
+  (ref) => useMockData
+      ? MockItemRepository()
+      : ApiItemRepository(ref.watch(apiClientProvider)),
 );
