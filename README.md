@@ -110,7 +110,8 @@ Kökte `ProviderScope` vardır. Temel provider'lar `lib/app/providers/` altında
 | `secureStorageProvider`  | `FlutterSecureStorage` (iOS'ta Keychain)                  |
 | `apiClientProvider`      | Tek `Dio` örneği + `AuthInterceptor` (token ekler, 401'de çıkış) |
 | `itemRepositoryProvider` | `ApiItemRepository`; `USE_MOCK=true` ile `MockItemRepository` |
-| `authStateProvider`      | Oturum durumu (`AuthState.isLoggedIn`, `user`)            |
+| `authRepositoryProvider` | `ApiAuthRepository`; `USE_MOCK=true` ile `MockAuthRepository` |
+| `authStateProvider`      | Oturum durumu (`status`: `unknown` / `signedOut` / `signedIn`, `user`) |
 
 Veri ekranları `AsyncNotifier` + ortak `AsyncValueView` kalıbını kullanır.
 İlan listeleri sayfalıdır: `PagedItemsNotifier`'dan türeyen sınıf yalnızca
@@ -120,10 +121,30 @@ yenileme, sona gelince sonraki sayfa). Örnekler: `features/home/item_list_provi
 yerine `AppException` (`NetworkException`, `ServerException`,
 `ValidationException`, `UnauthorizedException`) fırlatır; mesajlar Türkçedir.
 
+## Oturum
+
+| İstek                     | Gövde                                                   | Yanıt                  |
+| ------------------------- | ------------------------------------------------------- | ---------------------- |
+| `POST /api/auth/login`    | `email, password`                                       | `{ token, expiresAt }` |
+| `POST /api/auth/register` | `fullName, email, studentNo, password, confirmPassword` | `{ token, expiresAt }` |
+| `GET /api/auth/me`        | —                                                       | `{ id, fullName, email, studentNo }` |
+
+`id` metindir (ASP.NET Identity), `studentNo` boş olabilir, `expiresAt` ISO-8601 UTC.
+Yanlış şifre `401`, alan hataları `400` + `ProblemDetails.errors` (`{ "Email": ["..."] }`)
+döner; `errors` anahtarı form alanıyla eşleşiyorsa hata o alanın altında, eşleşmiyorsa
+kısa mesajla gösterilir.
+
+Token Keychain'de (`jwt`, `expiresAt`) saklanır. Açılışta süresi geçmemiş token varsa
+`GET /api/auth/me` ile doğrulanır ve giriş ekranı görünmeden ana sayfa açılır. `401`
+token'ı siler; ağ hatasında giriş ekranı açılır ama token kalır, sonraki açılışta
+yeniden denenir. Yönlendirme `app_router.dart` içinde oturum durumuna bakar: oturum
+değişince kendiliğinden giriş veya ana sayfaya geçilir.
+
 ## Gezinme
 
 | Yol              | Ekran                                   |
 | ---------------- | --------------------------------------- |
+| `/splash`        | Açılışta oturum kontrol edilirken       |
 | `/onboarding`    | İlk açılış tanıtımı                     |
 | `/login`         | Giriş                                   |
 | `/register`      | Kayıt                                   |

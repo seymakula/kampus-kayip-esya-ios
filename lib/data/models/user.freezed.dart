@@ -16,7 +16,9 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$User {
 
- int get id; String get fullName; String get email; String get studentNo;
+/// ASP.NET Identity kimliği: sayı değil, metin (GUID).
+ String get id; String get fullName; String get email;/// Web'de isteğe bağlı (personel hesaplarında boş olabilir).
+ String? get studentNo;
 /// Create a copy of User
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -54,7 +56,7 @@ abstract mixin class $UserCopyWith<$Res>  {
   factory $UserCopyWith(User value, $Res Function(User) _then) = _$UserCopyWithImpl;
 @useResult
 $Res call({
- int id, String fullName, String email, String studentNo
+ String id, String fullName, String email, String? studentNo
 });
 
 
@@ -71,13 +73,13 @@ class _$UserCopyWithImpl<$Res>
 
 /// Create a copy of User
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? fullName = null,Object? email = null,Object? studentNo = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? fullName = null,Object? email = null,Object? studentNo = freezed,}) {
   return _then(User(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as int,fullName: null == fullName ? _self.fullName : fullName // ignore: cast_nullable_to_non_nullable
+as String,fullName: null == fullName ? _self.fullName : fullName // ignore: cast_nullable_to_non_nullable
 as String,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
-as String,studentNo: null == studentNo ? _self.studentNo : studentNo // ignore: cast_nullable_to_non_nullable
-as String,
+as String,studentNo: freezed == studentNo ? _self.studentNo : studentNo // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -162,7 +164,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String fullName,  String email,  String studentNo)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String fullName,  String email,  String? studentNo)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _User() when $default != null:
 return $default(_that.id,_that.fullName,_that.email,_that.studentNo);case _:
@@ -183,7 +185,7 @@ return $default(_that.id,_that.fullName,_that.email,_that.studentNo);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String fullName,  String email,  String studentNo)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String fullName,  String email,  String? studentNo)  $default,) {final _that = this;
 switch (_that) {
 case _User():
 return $default(_that.id,_that.fullName,_that.email,_that.studentNo);case _:
@@ -203,7 +205,7 @@ return $default(_that.id,_that.fullName,_that.email,_that.studentNo);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String fullName,  String email,  String studentNo)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String fullName,  String email,  String? studentNo)?  $default,) {final _that = this;
 switch (_that) {
 case _User() when $default != null:
 return $default(_that.id,_that.fullName,_that.email,_that.studentNo);case _:
@@ -218,13 +220,15 @@ return $default(_that.id,_that.fullName,_that.email,_that.studentNo);case _:
 @JsonSerializable()
 
 class _User implements User {
-  const _User({required this.id, required this.fullName, required this.email, required this.studentNo});
+  const _User({required this.id, required this.fullName, required this.email, this.studentNo});
   factory _User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
 
-@override final  int id;
+/// ASP.NET Identity kimliği: sayı değil, metin (GUID).
+@override final  String id;
 @override final  String fullName;
 @override final  String email;
-@override final  String studentNo;
+/// Web'de isteğe bağlı (personel hesaplarında boş olabilir).
+@override final  String? studentNo;
 
 /// Create a copy of User
 /// with the given fields replaced by the non-null parameter values.
@@ -261,7 +265,7 @@ abstract mixin class _$UserCopyWith<$Res> implements $UserCopyWith<$Res> {
   factory _$UserCopyWith(_User value, $Res Function(_User) _then) = __$UserCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String fullName, String email, String studentNo
+ String id, String fullName, String email, String? studentNo
 });
 
 
@@ -278,13 +282,13 @@ class __$UserCopyWithImpl<$Res>
 
 /// Create a copy of User
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? fullName = null,Object? email = null,Object? studentNo = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? fullName = null,Object? email = null,Object? studentNo = freezed,}) {
   return _then(_User(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as int,fullName: null == fullName ? _self.fullName : fullName // ignore: cast_nullable_to_non_nullable
+as String,fullName: null == fullName ? _self.fullName : fullName // ignore: cast_nullable_to_non_nullable
 as String,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
-as String,studentNo: null == studentNo ? _self.studentNo : studentNo // ignore: cast_nullable_to_non_nullable
-as String,
+as String,studentNo: freezed == studentNo ? _self.studentNo : studentNo // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 

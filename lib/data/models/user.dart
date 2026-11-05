@@ -6,10 +6,13 @@ part 'user.g.dart';
 @freezed
 abstract class User with _$User {
   const factory User({
-    required int id,
+    /// ASP.NET Identity kimliği: sayı değil, metin (GUID).
+    required String id,
     required String fullName,
     required String email,
-    required String studentNo,
+
+    /// Web'de isteğe bağlı (personel hesaplarında boş olabilir).
+    String? studentNo,
   }) = _User;
 
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
