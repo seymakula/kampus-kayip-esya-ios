@@ -27,14 +27,14 @@ const mockLocations = <Location>[
 ];
 
 const mockUsers = <User>[
-  User(id: 1, fullName: 'Şeyma Kula', email: 'seyma.kula@ogrenci.ankara.edu.tr', studentNo: '23291513'),
-  User(id: 2, fullName: 'Barış Coşkun', email: 'baris.coskun@ogrenci.ankara.edu.tr', studentNo: '23291721'),
-  User(id: 3, fullName: 'Elif Yıldız', email: 'elif.yildiz@ogrenci.ankara.edu.tr', studentNo: '22290145'),
-  User(id: 4, fullName: 'Mehmet Demir', email: 'mehmet.demir@ogrenci.ankara.edu.tr', studentNo: '21290877'),
+  User(id: 'u1', fullName: 'Şeyma Kula', email: 'seyma.kula@ogrenci.ankara.edu.tr', studentNo: '23291513'),
+  User(id: 'u2', fullName: 'Barış Coşkun', email: 'baris.coskun@ogrenci.ankara.edu.tr', studentNo: '23291721'),
+  User(id: 'u3', fullName: 'Elif Yıldız', email: 'elif.yildiz@ogrenci.ankara.edu.tr', studentNo: '22290145'),
+  User(id: 'u4', fullName: 'Mehmet Demir', email: 'mehmet.demir@ogrenci.ankara.edu.tr', studentNo: '21290877'),
 ];
 
 /// Oturum açmış kabul edilen mock kullanıcı.
-const mockCurrentUser = User(id: 1, fullName: 'Şeyma Kula', email: 'seyma.kula@ogrenci.ankara.edu.tr', studentNo: '23291513');
+const mockCurrentUser = User(id: 'u1', fullName: 'Şeyma Kula', email: 'seyma.kula@ogrenci.ankara.edu.tr', studentNo: '23291513');
 
 Category _cat(int id) => mockCategories.firstWhere((c) => c.id == id);
 Location _loc(int id) => mockLocations.firstWhere((l) => l.id == id);

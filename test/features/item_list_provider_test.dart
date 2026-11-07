@@ -1,13 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kampus_kayip_esya/app/providers/auth_provider.dart';
 import 'package:kampus_kayip_esya/app/providers/core_providers.dart';
 import 'package:kampus_kayip_esya/data/models/models.dart';
 import 'package:kampus_kayip_esya/data/repositories/api_item_repository.dart';
 import 'package:kampus_kayip_esya/data/repositories/item_repository.dart';
 import 'package:kampus_kayip_esya/data/repositories/mock_item_repository.dart';
 import 'package:kampus_kayip_esya/features/home/item_list_provider.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 ProviderContainer _container([ItemRepository? repo]) {
   final c = ProviderContainer(
@@ -39,16 +37,5 @@ void main() {
     final c = ProviderContainer();
     addTearDown(c.dispose);
     expect(c.read(itemRepositoryProvider), isA<ApiItemRepository>());
-  });
-
-  test('signOut token\'ı siler ve oturumu kapatır', () async {
-    FlutterSecureStorage.setMockInitialValues({'jwt': 'abc', 'expiresAt': 'x'});
-    final c = _container();
-    expect(c.read(authStateProvider).isLoggedIn, isTrue);
-
-    await c.read(authStateProvider.notifier).signOut();
-
-    expect(c.read(authStateProvider).isLoggedIn, isFalse);
-    expect(await c.read(secureStorageProvider).read(key: 'jwt'), isNull);
   });
 }

@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../app/router/app_routes.dart';
+import '../../app/providers/auth_provider.dart';
 import 'auth_validators.dart';
 import 'widgets/auth_submit.dart';
 import 'widgets/password_field.dart';
 
-class RegisterScreen extends StatefulWidget {
+class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
 
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> with AuthSubmitMixin {
+class _RegisterScreenState extends ConsumerState<RegisterScreen>
+    with AuthSubmitMixin {
   final _fullName = TextEditingController();
   final _email = TextEditingController();
   final _studentNo = TextEditingController();
@@ -34,12 +35,26 @@ class _RegisterScreenState extends State<RegisterScreen> with AuthSubmitMixin {
     super.dispose();
   }
 
-  Future<void> _submit() => submitForm(() async {
-    // Hafta 3 (Şeyma): ref.read(authStateProvider.notifier).register(
-    //     fullName, email, studentNo, password)
-    await Future<void>.delayed(mockAuthDelay);
-    if (mounted) context.go(AppRoutes.home);
-  });
+  @override
+  Map<String, TextEditingController> get serverFields => {
+    'fullName': _fullName,
+    'email': _email,
+    'studentNo': _studentNo,
+    'password': _password,
+    'confirmPassword': _passwordAgain,
+  };
+
+  // Başarılı olunca oturum değişir, router ana sayfaya yönlendirir.
+  Future<void> _submit() => submitForm(
+    () => ref
+        .read(authStateProvider.notifier)
+        .register(
+          fullName: _fullName.text.trim(),
+          email: _email.text.trim(),
+          studentNo: _studentNo.text.trim(),
+          password: _password.text,
+        ),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +73,10 @@ class _RegisterScreenState extends State<RegisterScreen> with AuthSubmitMixin {
                   textCapitalization: TextCapitalization.words,
                   autofillHints: const [AutofillHints.name],
                   textInputAction: TextInputAction.next,
-                  validator: AuthValidators.fullName,
+                  validator: withServerError(
+                    'fullName',
+                    AuthValidators.fullName,
+                  ),
                   decoration: const InputDecoration(
                     labelText: 'Ad soyad',
                     prefixIcon: Icon(Icons.person_outline),
@@ -71,7 +89,10 @@ class _RegisterScreenState extends State<RegisterScreen> with AuthSubmitMixin {
                   autocorrect: false,
                   autofillHints: const [AutofillHints.email],
                   textInputAction: TextInputAction.next,
-                  validator: AuthValidators.schoolEmail,
+                  validator: withServerError(
+                    'email',
+                    AuthValidators.schoolEmail,
+                  ),
                   decoration: const InputDecoration(
                     labelText: 'Okul e-postası',
                     hintText: 'ad.soyad@ogrenci.ankara.edu.tr',
@@ -83,7 +104,10 @@ class _RegisterScreenState extends State<RegisterScreen> with AuthSubmitMixin {
                   controller: _studentNo,
                   keyboardType: TextInputType.number,
                   textInputAction: TextInputAction.next,
-                  validator: AuthValidators.studentNo,
+                  validator: withServerError(
+                    'studentNo',
+                    AuthValidators.studentNo,
+                  ),
                   decoration: const InputDecoration(
                     labelText: 'Öğrenci / personel no',
                     prefixIcon: Icon(Icons.badge_outlined),
@@ -95,7 +119,10 @@ class _RegisterScreenState extends State<RegisterScreen> with AuthSubmitMixin {
                   label: 'Şifre',
                   autofillHints: const [AutofillHints.newPassword],
                   textInputAction: TextInputAction.next,
-                  validator: AuthValidators.newPassword,
+                  validator: withServerError(
+                    'password',
+                    AuthValidators.newPassword,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Padding(
@@ -111,8 +138,9 @@ class _RegisterScreenState extends State<RegisterScreen> with AuthSubmitMixin {
                   controller: _passwordAgain,
                   label: 'Şifre (tekrar)',
                   autofillHints: const [AutofillHints.newPassword],
-                  validator: AuthValidators.confirmPassword(
-                    () => _password.text,
+                  validator: withServerError(
+                    'confirmPassword',
+                    AuthValidators.confirmPassword(() => _password.text),
                   ),
                   onFieldSubmitted: (_) => _submit(),
                 ),

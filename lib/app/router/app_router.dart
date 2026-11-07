@@ -1,8 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/auth/login_screen.dart';
 import '../../features/auth/register_screen.dart';
+import '../../features/auth/session_loading_screen.dart';
 import '../../features/create_item/create_item_screen.dart';
 import '../../features/home/home_screen.dart';
 import '../../features/item_detail/item_detail_screen.dart';
@@ -12,28 +14,48 @@ import '../../features/onboarding/onboarding_prefs.dart';
 import '../../features/onboarding/onboarding_screen.dart';
 import '../../features/profile/profile_screen.dart';
 import '../../features/search/search_screen.dart';
+import '../providers/auth_provider.dart';
 import '../shell/main_shell.dart';
 import 'app_routes.dart';
 
 GoRouter createAppRouter({
   required OnboardingPrefs onboardingPrefs,
   String initialLocation = AppRoutes.home,
+
+  /// Oturum durumu; değiştikçe yönlendirme yeniden çalışır. `null` ise oturum
+  /// kontrolü yapılmaz (yalnızca ekran testleri için).
+  ValueListenable<AuthStatus>? authStatus,
 }) {
   final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 
   return GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: initialLocation,
-    // Tanıtım görülmediyse her yol önce tanıtıma gider.
-    // Hafta 3'te oturum kontrolü (giriş yoksa /login) de buraya eklenecek.
+    refreshListenable: authStatus,
+    // Tanıtım görülmediyse her yol önce tanıtıma gider; sonra oturuma bakılır.
     redirect: (context, state) {
-      final atOnboarding = state.matchedLocation == AppRoutes.onboarding;
+      final location = state.matchedLocation;
+      final atOnboarding = location == AppRoutes.onboarding;
       if (!onboardingPrefs.seen) {
         return atOnboarding ? null : AppRoutes.onboarding;
       }
-      return atOnboarding ? AppRoutes.home : null;
+      if (authStatus == null) return atOnboarding ? AppRoutes.home : null;
+
+      final atSplash = location == AppRoutes.splash;
+      final atAuth =
+          location == AppRoutes.login || location == AppRoutes.register;
+      return switch (authStatus.value) {
+        AuthStatus.unknown => atSplash ? null : AppRoutes.splash,
+        AuthStatus.signedOut => atAuth ? null : AppRoutes.login,
+        AuthStatus.signedIn =>
+          atAuth || atSplash || atOnboarding ? AppRoutes.home : null,
+      };
     },
     routes: [
+      GoRoute(
+        path: AppRoutes.splash,
+        builder: (context, state) => const SessionLoadingScreen(),
+      ),
       GoRoute(
         path: AppRoutes.onboarding,
         builder: (context, state) => OnboardingScreen(

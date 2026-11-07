@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kampus_kayip_esya/app/app.dart';
 import 'package:kampus_kayip_esya/app/providers/core_providers.dart';
 import 'package:kampus_kayip_esya/app/router/app_router.dart';
 import 'package:kampus_kayip_esya/app/router/app_routes.dart';
 import 'package:kampus_kayip_esya/app/theme/app_theme.dart';
+import 'package:kampus_kayip_esya/data/repositories/mock_auth_repository.dart';
 import 'package:kampus_kayip_esya/data/repositories/mock_item_repository.dart';
-import 'package:kampus_kayip_esya/features/auth/widgets/auth_submit.dart';
 import 'package:kampus_kayip_esya/features/onboarding/onboarding_prefs.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -38,10 +40,24 @@ Future<void> _pumpAt(
 
 Finder _field(String label) => find.widgetWithText(TextFormField, label);
 
-/// Sahte giriş beklemesini geçer.
-Future<void> _waitSubmit(WidgetTester tester) async {
-  await tester.pump();
-  await tester.pump(mockAuthDelay);
+/// Gerçek yönlendirmeyle tüm uygulama: kayıtlı oturum yok, giriş ekranı açılır.
+Future<void> _pumpSignedOutApp(WidgetTester tester) async {
+  SharedPreferences.setMockInitialValues({'onboarding_seen': true});
+  FlutterSecureStorage.setMockInitialValues({});
+  final prefs = OnboardingPrefs(await SharedPreferences.getInstance());
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [
+        authRepositoryProvider.overrideWithValue(
+          MockAuthRepository(latency: Duration.zero),
+        ),
+        itemRepositoryProvider.overrideWithValue(
+          MockItemRepository(latency: Duration.zero),
+        ),
+      ],
+      child: KampusKayipEsyaApp(onboardingPrefs: prefs),
+    ),
+  );
   await tester.pumpAndSettle();
 }
 
@@ -72,7 +88,7 @@ void main() {
     });
 
     testWidgets('geçerli bilgilerle ana sayfaya geçilir', (tester) async {
-      await _pumpAt(tester, AppRoutes.login);
+      await _pumpSignedOutApp(tester);
 
       await tester.enterText(
         _field('Okul e-postası'),
@@ -80,7 +96,7 @@ void main() {
       );
       await tester.enterText(_field('Şifre'), 'sifre123');
       await tester.tap(find.widgetWithText(FilledButton, 'Giriş yap'));
-      await _waitSubmit(tester);
+      await tester.pumpAndSettle();
 
       expect(find.byType(NavigationBar), findsOneWidget);
       expect(find.text('Kampüs Kayıp Eşya'), findsOneWidget);
@@ -158,10 +174,12 @@ void main() {
     });
 
     testWidgets('geçerli bilgilerle ana sayfaya geçilir', (tester) async {
-      await _pumpAt(tester, AppRoutes.register);
+      await _pumpSignedOutApp(tester);
+      await tester.tap(find.widgetWithText(TextButton, 'Kayıt ol'));
+      await tester.pumpAndSettle();
 
       await fill(tester);
-      await _waitSubmit(tester);
+      await tester.pumpAndSettle();
 
       expect(find.byType(NavigationBar), findsOneWidget);
     });

@@ -3,8 +3,11 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../../data/api/api_client.dart';
 import '../../data/api/auth_interceptor.dart';
+import '../../data/repositories/api_auth_repository.dart';
 import '../../data/repositories/api_item_repository.dart';
+import '../../data/repositories/auth_repository.dart';
 import '../../data/repositories/item_repository.dart';
+import '../../data/repositories/mock_auth_repository.dart';
 import '../../data/repositories/mock_item_repository.dart';
 import '../config.dart';
 import 'auth_provider.dart';
@@ -35,4 +38,11 @@ final itemRepositoryProvider = Provider<ItemRepository>(
   (ref) => useMockData
       ? MockItemRepository()
       : ApiItemRepository(ref.watch(apiClientProvider)),
+);
+
+/// Varsayılan: ortak Web API. `--dart-define=USE_MOCK=true` ile örnek veri.
+final authRepositoryProvider = Provider<AuthRepository>(
+  (ref) => useMockData
+      ? MockAuthRepository()
+      : ApiAuthRepository(ref.watch(apiClientProvider)),
 );

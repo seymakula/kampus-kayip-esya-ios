@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/providers/auth_provider.dart';
 import '../../app/router/app_routes.dart';
 import 'auth_validators.dart';
 import 'widgets/auth_submit.dart';
 import 'widgets/password_field.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> with AuthSubmitMixin {
+class _LoginScreenState extends ConsumerState<LoginScreen>
+    with AuthSubmitMixin {
   final _email = TextEditingController();
   final _password = TextEditingController();
 
@@ -24,12 +27,18 @@ class _LoginScreenState extends State<LoginScreen> with AuthSubmitMixin {
     super.dispose();
   }
 
-  Future<void> _submit() => submitForm(() async {
-    // Hafta 3 (Şeyma): ref.read(authStateProvider.notifier)
-    //     .login(_email.text.trim(), _password.text)
-    await Future<void>.delayed(mockAuthDelay);
-    if (mounted) context.go(AppRoutes.home);
-  });
+  @override
+  Map<String, TextEditingController> get serverFields => {
+    'email': _email,
+    'password': _password,
+  };
+
+  // Başarılı olunca oturum değişir, router ana sayfaya yönlendirir.
+  Future<void> _submit() => submitForm(
+    () => ref
+        .read(authStateProvider.notifier)
+        .login(email: _email.text.trim(), password: _password.text),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -79,7 +88,10 @@ class _LoginScreenState extends State<LoginScreen> with AuthSubmitMixin {
                   autocorrect: false,
                   autofillHints: const [AutofillHints.email],
                   textInputAction: TextInputAction.next,
-                  validator: AuthValidators.schoolEmail,
+                  validator: withServerError(
+                    'email',
+                    AuthValidators.schoolEmail,
+                  ),
                   decoration: const InputDecoration(
                     labelText: 'Okul e-postası',
                     hintText: 'ad.soyad@ogrenci.ankara.edu.tr',
@@ -90,7 +102,10 @@ class _LoginScreenState extends State<LoginScreen> with AuthSubmitMixin {
                 PasswordField(
                   controller: _password,
                   label: 'Şifre',
-                  validator: AuthValidators.loginPassword,
+                  validator: withServerError(
+                    'password',
+                    AuthValidators.loginPassword,
+                  ),
                   onFieldSubmitted: (_) => _submit(),
                 ),
                 const SizedBox(height: 24),

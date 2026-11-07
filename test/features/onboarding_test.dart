@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kampus_kayip_esya/app/providers/core_providers.dart';
+import 'package:kampus_kayip_esya/data/repositories/mock_auth_repository.dart';
 import 'package:kampus_kayip_esya/data/repositories/mock_item_repository.dart';
 import 'package:kampus_kayip_esya/features/onboarding/onboarding_prefs.dart';
 import 'package:kampus_kayip_esya/app/app.dart';
@@ -9,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 Future<OnboardingPrefs> _prefs([Map<String, Object> values = const {}]) async {
   SharedPreferences.setMockInitialValues(values);
+  FlutterSecureStorage.setMockInitialValues({});
   return OnboardingPrefs(await SharedPreferences.getInstance());
 }
 
@@ -16,7 +19,10 @@ Future<void> _pumpApp(WidgetTester tester, OnboardingPrefs prefs) =>
     tester.pumpWidget(
       ProviderScope(
         overrides: [
-          itemRepositoryProvider.overrideWithValue(
+          authRepositoryProvider.overrideWithValue(
+          MockAuthRepository(latency: Duration.zero),
+        ),
+        itemRepositoryProvider.overrideWithValue(
             MockItemRepository(latency: Duration.zero),
           ),
         ],

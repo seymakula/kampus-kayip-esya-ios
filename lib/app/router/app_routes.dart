@@ -1,6 +1,7 @@
 /// Tüm rota yolları tek yerde. Ekranlar `context.go(AppRoutes.search)`
 /// gibi kullanır, yol dizgesi elle yazılmaz.
 abstract final class AppRoutes {
+  static const splash = '/splash';
   static const onboarding = '/onboarding';
   static const login = '/login';
   static const register = '/register';
