@@ -16,4 +16,6 @@ abstract final class AppRoutes {
   static const notifications = '/notifications';
   static const itemDetailPattern = '/items/:id';
   static String itemDetail(int id) => '/items/$id';
+  static String itemPhotos(int id, {int index = 0}) =>
+      '/items/$id/photos?i=$index';
 }

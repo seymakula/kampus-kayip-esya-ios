@@ -13,6 +13,14 @@ const _months = [
   'Ara',
 ];
 
+/// İlan detayındaki tam tarih: "30 Eki 2026, 14:05" (yerel saat).
+String formatDateTime(DateTime date) {
+  final d = date.toLocal();
+  String two(int n) => n.toString().padLeft(2, '0');
+  return '${d.day} ${_months[d.month - 1]} ${d.year}, '
+      '${two(d.hour)}:${two(d.minute)}';
+}
+
 /// İlan kartlarındaki göreli tarih: "Az önce", "5 dk önce", "3 saat önce",
 /// "Dün", "4 gün önce"; bir haftadan eskiyse "12 Eki" (başka yılsa "12 Eki 2025").
 /// [now] testler için verilebilir.

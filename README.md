@@ -154,6 +154,7 @@ değişince kendiliğinden giriş veya ana sayfaya geçilir.
 | `/messages`      | **Mesajlar** sekmesi                    |
 | `/profile`       | **Profil** sekmesi                      |
 | `/items/:id`     | İlan detayı (alt menünün üstünde)       |
+| `/items/:id/photos?i=N` | Tam ekran fotoğraf galerisi (N. fotoğraftan) |
 | `/notifications` | Bildirimler (alt menünün üstünde)       |
 
 Sekmeler `StatefulShellRoute.indexedStack` ile kurulur; her sekme kendi

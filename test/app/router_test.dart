@@ -100,10 +100,14 @@ void main() {
   });
 
   testWidgets('ilan detayı yolu id parametresini okur', (tester) async {
+    tester.view.physicalSize = const Size(1170, 2532); // iPhone boyutu
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
     await _pumpApp(tester, initialLocation: AppRoutes.itemDetail(7));
 
     expect(_appBarTitle('İlan Detayı'), findsOneWidget);
-    expect(find.text('İlan #7'), findsOneWidget);
+    // Mock veride 7 numaralı ilan.
+    expect(find.text('Casio bilimsel hesap makinesi'), findsOneWidget);
   });
 
   testWidgets('tanıtım görülmediyse her yol tanıtıma yönlenir', (tester) async {

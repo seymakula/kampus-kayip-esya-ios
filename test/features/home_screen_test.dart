@@ -7,6 +7,7 @@ import 'package:kampus_kayip_esya/app/theme/app_theme.dart';
 import 'package:kampus_kayip_esya/data/models/models.dart';
 import 'package:kampus_kayip_esya/data/repositories/item_repository.dart';
 import 'package:kampus_kayip_esya/data/repositories/mock_item_repository.dart';
+import 'package:kampus_kayip_esya/features/item_detail/item_detail_screen.dart';
 import 'package:kampus_kayip_esya/features/onboarding/onboarding_prefs.dart';
 import 'package:kampus_kayip_esya/shared/widgets/item_card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -91,13 +92,22 @@ void main() {
   });
 
   testWidgets('karta dokununca ilan detayı açılır', (tester) async {
+    tester.view.physicalSize = const Size(1170, 2532); // iPhone boyutu
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
     await _pumpHome(tester);
 
     final first = _visibleItems(tester).first;
     await tester.tap(find.text(first.title));
     await tester.pumpAndSettle();
 
-    expect(find.text('İlan #${first.id}'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(ItemDetailScreen),
+        matching: find.text(first.title),
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('ilan yoksa boş durum gösterilir', (tester) async {

@@ -8,6 +8,7 @@ import '../../features/auth/session_loading_screen.dart';
 import '../../features/create_item/create_item_screen.dart';
 import '../../features/home/home_screen.dart';
 import '../../features/item_detail/item_detail_screen.dart';
+import '../../features/item_detail/photo_gallery_screen.dart';
 import '../../features/messages/messages_screen.dart';
 import '../../features/notifications/notifications_screen.dart';
 import '../../features/onboarding/onboarding_prefs.dart';
@@ -120,6 +121,23 @@ GoRouter createAppRouter({
         builder: (context, state) => ItemDetailScreen(
           itemId: int.tryParse(state.pathParameters['id'] ?? '') ?? 0,
         ),
+        routes: [
+          // Tam ekran galeri: /items/:id/photos?i=2
+          GoRoute(
+            path: 'photos',
+            parentNavigatorKey: rootNavigatorKey,
+            pageBuilder: (context, state) => CustomTransitionPage(
+              key: state.pageKey,
+              child: PhotoGalleryScreen(
+                itemId: int.tryParse(state.pathParameters['id'] ?? '') ?? 0,
+                initialIndex:
+                    int.tryParse(state.uri.queryParameters['i'] ?? '') ?? 0,
+              ),
+              transitionsBuilder: (context, animation, _, child) =>
+                  FadeTransition(opacity: animation, child: child),
+            ),
+          ),
+        ],
       ),
       GoRoute(
         path: AppRoutes.notifications,
