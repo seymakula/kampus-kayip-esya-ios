@@ -170,13 +170,17 @@ class _ApiBaseUrlFieldState extends ConsumerState<_ApiBaseUrlField> {
               style: Theme.of(context).textTheme.bodySmall,
             ),
             const SizedBox(height: 12),
-            // Temada düğmeler tam genişlik; yan yana değil alt alta.
-            FilledButton(onPressed: _save, child: const Text('Kaydet')),
-            if (overridden)
-              TextButton(
-                onPressed: _reset,
-                child: const Text('Varsayılana dön'),
-              ),
+            Row(
+              children: [
+                FilledButton(onPressed: _save, child: const Text('Kaydet')),
+                const SizedBox(width: 8),
+                if (overridden)
+                  TextButton(
+                    onPressed: _reset,
+                    child: const Text('Varsayılana dön'),
+                  ),
+              ],
+            ),
           ],
         ),
       ),
