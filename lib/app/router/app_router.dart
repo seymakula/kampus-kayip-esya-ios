@@ -13,6 +13,7 @@ import '../../features/notifications/notifications_screen.dart';
 import '../../features/onboarding/onboarding_prefs.dart';
 import '../../features/onboarding/onboarding_screen.dart';
 import '../../features/profile/profile_screen.dart';
+import '../../features/profile/settings_screen.dart';
 import '../../features/search/search_screen.dart';
 import '../providers/auth_provider.dart';
 import '../shell/main_shell.dart';
@@ -125,6 +126,11 @@ GoRouter createAppRouter({
         path: AppRoutes.notifications,
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const NotificationsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.settings,
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const SettingsScreen(),
       ),
     ],
   );

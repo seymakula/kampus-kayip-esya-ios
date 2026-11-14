@@ -12,6 +12,7 @@ abstract final class AppRoutes {
   static const createItem = '/create';
   static const messages = '/messages';
   static const profile = '/profile';
+  static const settings = '/settings';
 
   static const notifications = '/notifications';
   static const itemDetailPattern = '/items/:id';
