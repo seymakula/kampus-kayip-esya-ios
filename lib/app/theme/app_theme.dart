@@ -47,13 +47,15 @@ abstract final class AppTheme {
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          minimumSize: const Size.fromHeight(48),
+          // Yalnızca yükseklik sabit; genişlik içeriğe göre. Tam genişlik
+          // isteyen ekran bunu kendisi verir (ListView, SizedBox, Expanded).
+          minimumSize: const Size(64, 48),
           shape: RoundedRectangleBorder(borderRadius: radius),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          minimumSize: const Size.fromHeight(48),
+          minimumSize: const Size(64, 48),
           shape: RoundedRectangleBorder(borderRadius: radius),
         ),
       ),

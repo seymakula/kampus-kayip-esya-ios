@@ -93,6 +93,11 @@ void main() {
     // Doğrulama sorusunun kendisi ilanda gösterilmez.
     expect(find.text(item.verificationQuestion!), findsNothing);
     expect(find.widgetWithText(FilledButton, 'Bu benim'), findsOneWidget);
+    // Alt çubuktaki düğme ekran genişliğini kaplar (kenar boşlukları hariç).
+    expect(
+      tester.getSize(find.widgetWithText(FilledButton, 'Bu benim')).width,
+      390 - 32,
+    );
   });
 
   testWidgets('kayıp ilanında "Ben buldum", doğrulama notu yok', (
