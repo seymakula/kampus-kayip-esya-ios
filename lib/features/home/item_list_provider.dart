@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../app/providers/auth_provider.dart';
 import '../../app/providers/core_providers.dart';
 import '../../data/models/models.dart';
 import '../../shared/paging/paged_items.dart';
@@ -13,6 +14,13 @@ class ItemListNotifier extends PagedItemsNotifier {
   ItemListNotifier(this.type);
 
   final ItemType? type;
+
+  @override
+  Future<PagedItems> build() {
+    // Çıkış veya başka kullanıcıyla giriş olunca liste baştan yüklenir.
+    ref.watch(authStateProvider.select((s) => s.user?.id));
+    return super.build();
+  }
 
   @override
   Future<PagedResult<Item>> fetchPage(int page) => ref

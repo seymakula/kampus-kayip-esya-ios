@@ -77,6 +77,11 @@ flutter run --dart-define=API_BASE=http://localhost:5080
 flutter run --dart-define=API_BASE=http://192.168.1.20:5080
 ```
 
+Debug derlemede adres uygulamadan da değiştirilebilir: **Profil → Ayarlar →
+API adresi**. Kaydedilen adres kalıcıdır ve hemen kullanılır; "Varsayılana dön"
+ile `API_BASE`'e dönülür. Gösterimde ağ ve IP değişirse yeniden derlemek
+gerekmez. Release derlemede bu alan görünmez.
+
 Telefon ve bilgisayar aynı ağda olmalı; web tarafında Kestrel `http://0.0.0.0:5080`
 dinlemeli.
 
@@ -156,6 +161,7 @@ değişince kendiliğinden giriş veya ana sayfaya geçilir.
 | `/items/:id`     | İlan detayı (alt menünün üstünde)       |
 | `/items/:id/photos?i=N` | Tam ekran fotoğraf galerisi (N. fotoğraftan) |
 | `/notifications` | Bildirimler (alt menünün üstünde)       |
+| `/settings`      | Ayarlar (Profil'den, alt menünün üstünde) |
 
 Sekmeler `StatefulShellRoute.indexedStack` ile kurulur; her sekme kendi
 gezinme geçmişini korur. Yollar elle yazılmaz, `AppRoutes` sabitleri kullanılır:

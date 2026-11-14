@@ -60,6 +60,15 @@ class AuthNotifier extends Notifier<AuthState> {
     await _start(session);
   }
 
+  /// Profil bilgisini sunucudan yeniler (Profil'de aşağı çekince).
+  Future<void> refreshUser() async {
+    if (!state.isLoggedIn) return;
+    final user = await ref.read(authRepositoryProvider).me();
+    if (ref.mounted && state.isLoggedIn) state = AuthState.signedIn(user);
+  }
+
+  /// Token Keychain'den silinir; oturuma bağlı veriler (ilan listeleri)
+  /// kullanıcı değiştiği için kendiliğinden yeniden yüklenir.
   Future<void> signOut() async {
     if (!state.isLoggedIn) return;
     await _clearToken();
