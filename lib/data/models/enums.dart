@@ -11,6 +11,12 @@ enum ItemType {
         ItemType.lost => 'Kayıp',
         ItemType.found => 'Bulundu',
       };
+
+  /// Etiket rozetindeki büyük harfli yazı (web `.tag`).
+  String get tagLabel => switch (this) {
+        ItemType.lost => 'KAYIP',
+        ItemType.found => 'BULUNDU',
+      };
 }
 
 /// İlanın yaşam döngüsü. Onay web panelindeki görevlide.

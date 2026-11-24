@@ -84,7 +84,7 @@ void main() {
     await _pumpDetail(tester, item.id);
 
     expect(_inDetail(find.text(item.title)), findsOneWidget);
-    expect(_inDetail(find.text('Bulundu')), findsOneWidget);
+    expect(_inDetail(find.text('BULUNDU')), findsOneWidget);
     expect(_inDetail(find.text(item.category.name)), findsOneWidget);
     expect(_inDetail(find.text(item.location.name)), findsOneWidget);
     expect(_inDetail(find.text('Bulunduğu yer')), findsOneWidget);

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kampus_kayip_esya/app/theme/app_colors.dart';
+import 'package:kampus_kayip_esya/shared/widgets/tag_badge.dart';
 import 'package:kampus_kayip_esya/app/theme/app_theme.dart';
 import 'package:kampus_kayip_esya/data/mock/mock_data.dart';
 import 'package:kampus_kayip_esya/data/models/models.dart';
@@ -11,10 +12,14 @@ Future<void> _pump(WidgetTester tester, Item item, {VoidCallback? onTap}) =>
       MaterialApp(
         theme: AppTheme.light,
         home: Scaffold(
-          body: ItemCard(
-            item: item,
-            onTap: onTap,
-            now: item.eventDate.add(const Duration(hours: 3)),
+          body: ListView(
+            children: [
+              ItemCard(
+                item: item,
+                onTap: onTap,
+                now: item.eventDate.add(const Duration(hours: 3)),
+              ),
+            ],
           ),
         ),
       ),
@@ -28,7 +33,7 @@ void main() {
     await _pump(tester, found);
 
     expect(find.text(found.title), findsOneWidget);
-    expect(find.text('Bulundu'), findsOneWidget);
+    expect(find.text('BULUNDU'), findsOneWidget);
     expect(find.text(found.category.name), findsOneWidget);
     expect(find.text(found.location.name), findsOneWidget);
     expect(find.text('3 saat önce'), findsOneWidget);
@@ -43,33 +48,61 @@ void main() {
     expect(tapped, 1);
   });
 
-  testWidgets('fotoğrafsız ilanda yer tutucu simge', (tester) async {
+  testWidgets('fotoğrafsız ilanda türüne göre etiket yer tutucu', (
+    tester,
+  ) async {
     await _pump(tester, noPhoto);
 
     expect(find.byType(Image), findsNothing);
-    expect(find.byIcon(Icons.image_outlined), findsOneWidget);
+    final placeholder = tester.widget<PlaceholderTag>(
+      find.byType(PlaceholderTag),
+    );
+    expect(placeholder.type, noPhoto.type);
+    expect(placeholder.icon, categoryIcon(noPhoto.category.icon));
   });
 
-  testWidgets('rozet rengi ilan türüne göre', (tester) async {
-    Color badgeColor(ItemType type) {
-      final box = tester.widget<DecoratedBox>(
+  testWidgets('tür etiketi: büyük harf, türe göre dolgu', (tester) async {
+    Color fill() {
+      final paint = tester.widget<CustomPaint>(
         find.descendant(
-          of: find.byType(ItemTypeBadge),
-          matching: find.byType(DecoratedBox),
+          of: find.byType(TagBadge),
+          matching: find.byType(CustomPaint),
         ),
       );
-      return (box.decoration as BoxDecoration).color!;
+      // ignore: avoid_dynamic_calls
+      return (paint.painter as dynamic).fill as Color;
     }
 
-    await tester.pumpWidget(
-      const MaterialApp(home: ItemTypeBadge(type: ItemType.lost)),
-    );
-    expect(find.text('Kayıp'), findsOneWidget);
-    expect(badgeColor(ItemType.lost), AppColors.lost);
+    for (final (type, label, color) in [
+      (ItemType.lost, 'KAYIP', AppPalette.light.lost),
+      (ItemType.found, 'BULUNDU', AppPalette.light.found),
+    ]) {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.light,
+          home: Center(child: ItemTypeBadge(type: type)),
+        ),
+      );
+      expect(find.text(label), findsOneWidget);
+      expect(fill(), color, reason: '$type');
+    }
+  });
 
-    await tester.pumpWidget(
-      const MaterialApp(home: ItemTypeBadge(type: ItemType.found)),
-    );
-    expect(badgeColor(ItemType.found), AppColors.found);
+  testWidgets('koyu temada ve küçük ekranda taşma yok', (tester) async {
+    tester.view.physicalSize = const Size(640, 1136);
+    tester.view.devicePixelRatio = 2;
+    addTearDown(tester.view.reset);
+
+    for (final item in [found, noPhoto]) {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.dark,
+          home: Scaffold(
+            body: ListView(children: [ItemCard(item: item)]),
+          ),
+        ),
+      );
+      expect(tester.takeException(), isNull);
+    }
   });
 }

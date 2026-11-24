@@ -4,16 +4,16 @@ import '../models/models.dart';
 // Bina koordinatları yaklaşıktır; gerçek değerler web'deki /api/locations'tan gelecek.
 
 const mockCategories = <Category>[
-  Category(id: 1, name: 'Elektronik'),
-  Category(id: 2, name: 'Cüzdan'),
-  Category(id: 3, name: 'Anahtar'),
-  Category(id: 4, name: 'Kimlik/Kart'),
-  Category(id: 5, name: 'Giyim'),
-  Category(id: 6, name: 'Çanta'),
-  Category(id: 7, name: 'Kırtasiye'),
-  Category(id: 8, name: 'Aksesuar'),
-  Category(id: 9, name: 'Şişe/Termos'),
-  Category(id: 10, name: 'Şemsiye'),
+  Category(id: 1, name: 'Elektronik', icon: 'bi-phone'),
+  Category(id: 2, name: 'Cüzdan', icon: 'bi-wallet2'),
+  Category(id: 3, name: 'Anahtar', icon: 'bi-key'),
+  Category(id: 4, name: 'Kimlik/Kart', icon: 'bi-person-vcard'),
+  Category(id: 5, name: 'Giyim', icon: 'bi-bag'),
+  Category(id: 6, name: 'Çanta', icon: 'bi-backpack'),
+  Category(id: 7, name: 'Kırtasiye', icon: 'bi-pencil'),
+  Category(id: 8, name: 'Aksesuar', icon: 'bi-eyeglasses'),
+  Category(id: 9, name: 'Şişe/Termos', icon: 'bi-cup-straw'),
+  Category(id: 10, name: 'Şemsiye', icon: 'bi-umbrella'),
 ];
 
 const mockLocations = <Location>[

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../app/router/app_routes.dart';
 import '../../data/models/models.dart';
 import '../../shared/widgets/paged_item_list_view.dart';
+import '../../shared/widgets/tag_badge.dart';
 import 'item_list_provider.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -16,7 +17,22 @@ class HomeScreen extends StatelessWidget {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Kampüs Kayıp Eşya'),
+          // Web'deki gibi logo solda; dar ekranda ad kısalır, taşmaz.
+          centerTitle: false,
+          title: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              BrandMark(),
+              SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  'Kampüs Kayıp Eşya',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
           actions: [
             IconButton(
               tooltip: 'Bildirimler',
