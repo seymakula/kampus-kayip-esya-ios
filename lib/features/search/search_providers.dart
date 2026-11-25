@@ -42,6 +42,13 @@ final searchFilterProvider =
       SearchFilterNotifier.new,
     );
 
+/// Ana sayfanın filtreleri (kategori, bina, tarih). Ara ekranından bağımsız;
+/// tür Kayıp/Bulunan sekmesinden gelir.
+final homeFilterProvider =
+    NotifierProvider<SearchFilterNotifier, SearchFilter>(
+      SearchFilterNotifier.new,
+    );
+
 /// Bir filtrenin sonuçları. Filtre değişince eski sonuçlar bellekten atılır.
 class SearchResultsNotifier extends PagedItemsNotifier {
   SearchResultsNotifier(this.filter);
