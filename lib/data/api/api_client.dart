@@ -31,24 +31,25 @@ class ApiClient {
     String path, {
     Map<String, dynamic>? query,
     required T Function(Object? data) parse,
-  }) => _send(() => dio.get<Object?>(path, queryParameters: query), parse);
+  }) => send(() => dio.get<Object?>(path, queryParameters: query), parse);
 
   Future<T> post<T>(
     String path, {
     Object? body,
     required T Function(Object? data) parse,
-  }) => _send(() => dio.post<Object?>(path, data: body), parse);
+  }) => send(() => dio.post<Object?>(path, data: body), parse);
 
   Future<T> put<T>(
     String path, {
     Object? body,
     required T Function(Object? data) parse,
-  }) => _send(() => dio.put<Object?>(path, data: body), parse);
+  }) => send(() => dio.put<Object?>(path, data: body), parse);
 
   Future<void> delete(String path) =>
-      _send(() => dio.delete<Object?>(path), (_) {});
+      send(() => dio.delete<Object?>(path), (_) {});
 
-  Future<T> _send<T>(
+  /// Özel istekler (ör. multipart) için: [DioException]'ı [AppException]'a çevirir.
+  Future<T> send<T>(
     Future<Response<Object?>> Function() request,
     T Function(Object? data) parse,
   ) async {

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -7,6 +8,7 @@ import 'package:kampus_kayip_esya/data/api/app_exception.dart';
 import 'package:kampus_kayip_esya/data/mock/mock_data.dart';
 import 'package:kampus_kayip_esya/data/models/models.dart';
 import 'package:kampus_kayip_esya/data/repositories/api_item_repository.dart';
+import 'package:kampus_kayip_esya/data/repositories/item_repository.dart';
 
 /// İsteği kaydedip yola göre sabit JSON döndüren adaptör.
 class _FakeAdapter implements HttpClientAdapter {
@@ -173,5 +175,50 @@ void main() {
     });
 
     await expectLater(repo.getItem(1), throwsA(isA<ServerException>()));
+  });
+
+  test('ilan aç: doğru uca web ItemWriteRequest gövdesi gider', () async {
+    final (repo, adapter) = _repo({'/api/items': detailJson});
+
+    final created = await repo.createItem(
+      NewItem(
+        type: ItemType.found,
+        title: 'Siyah deri cüzdan',
+        categoryId: 3,
+        locationId: 3,
+        eventDate: DateTime.utc(2026, 11, 20, 9),
+        description: 'Amfinin arka sıralarında buldum.',
+        verificationQuestion: 'Kart hangi bankanın?',
+      ),
+    );
+
+    expect(adapter.last!.method, 'POST');
+    expect(adapter.last!.path, '/api/items');
+    expect(adapter.last!.data, {
+      'type': 'Found',
+      'title': 'Siyah deri cüzdan',
+      'categoryId': 3,
+      'locationId': 3,
+      'eventDate': '2026-11-20T09:00:00.000Z',
+      'description': 'Amfinin arka sıralarında buldum.',
+      'verificationQuestion': 'Kart hangi bankanın?',
+    });
+    expect(created.id, 7);
+  });
+
+  test('fotoğraflar multipart "files" alanıyla yüklenir', () async {
+    final dir = Directory.systemTemp.createTempSync('foto');
+    addTearDown(() => dir.deleteSync(recursive: true));
+    final a = File('${dir.path}/a.jpg')..writeAsBytesSync([0xFF, 0xD8, 0xFF]);
+    final b = File('${dir.path}/b.jpg')..writeAsBytesSync([0xFF, 0xD8, 0xFF]);
+    final (repo, adapter) = _repo({'/api/items/7/photos': detailJson});
+
+    final progress = <double>[];
+    await repo.uploadPhotos(7, [a.path, b.path], onProgress: progress.add);
+
+    final form = adapter.last!.data as FormData;
+    expect(adapter.last!.path, '/api/items/7/photos');
+    expect(form.files.map((f) => f.key), ['files', 'files']);
+    expect(form.files.map((f) => f.value.filename), ['a.jpg', 'b.jpg']);
   });
 }

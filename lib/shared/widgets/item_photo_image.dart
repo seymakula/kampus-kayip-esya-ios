@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
@@ -20,6 +22,14 @@ class ItemPhotoImage extends StatelessWidget {
     final photo = this.photo;
     if (photo == null) return const _Fallback(icon: Icons.image_outlined);
 
+    if (photo.isFile) {
+      return Image.file(
+        File(Uri.parse(photo.url).toFilePath()),
+        fit: fit,
+        errorBuilder: (context, error, stack) =>
+            const _Fallback(icon: Icons.broken_image_outlined),
+      );
+    }
     if (photo.isAsset) {
       return Image.asset(
         photo.url,

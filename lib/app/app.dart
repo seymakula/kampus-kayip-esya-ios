@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -52,6 +53,10 @@ class _KampusKayipEsyaAppState extends ConsumerState<KampusKayipEsyaApp> {
       darkTheme: AppTheme.dark,
       themeMode: ThemeMode.system,
       routerConfig: _router,
+      // Tarih seçici, metin seçme menüsü gibi sistem metinleri Türkçe.
+      locale: const Locale('tr'),
+      supportedLocales: const [Locale('tr')],
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
     );
   }
 }
