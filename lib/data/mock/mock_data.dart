@@ -17,13 +17,13 @@ const mockCategories = <Category>[
 ];
 
 const mockLocations = <Location>[
-  Location(id: 1, name: 'Mühendislik Fakültesi', latitude: 39.7792, longitude: 32.8062),
-  Location(id: 2, name: 'Merkez Kütüphane', latitude: 39.7801, longitude: 32.8049),
-  Location(id: 3, name: 'Merkez Yemekhane', latitude: 39.7785, longitude: 32.8040),
-  Location(id: 4, name: 'Spor Salonu', latitude: 39.7773, longitude: 32.8075),
-  Location(id: 5, name: 'Rektörlük', latitude: 39.7808, longitude: 32.8068),
-  Location(id: 6, name: 'Öğrenci Yurdu', latitude: 39.7765, longitude: 32.8031),
-  Location(id: 7, name: 'Ring Durağı', latitude: 39.7797, longitude: 32.8083),
+  Location(id: 1, building: 'Mühendislik Fakültesi', latitude: 39.7792, longitude: 32.8062),
+  Location(id: 2, building: 'Merkez Kütüphane', latitude: 39.7801, longitude: 32.8049),
+  Location(id: 3, building: 'Merkez Yemekhane', latitude: 39.7785, longitude: 32.8040),
+  Location(id: 4, building: 'Spor Salonu', latitude: 39.7773, longitude: 32.8075),
+  Location(id: 5, building: 'Rektörlük', latitude: 39.7808, longitude: 32.8068),
+  Location(id: 6, building: 'Öğrenci Yurdu', latitude: 39.7765, longitude: 32.8031),
+  Location(id: 7, building: 'Ring Durağı', latitude: 39.7797, longitude: 32.8083),
 ];
 
 const mockUsers = <User>[
@@ -48,6 +48,11 @@ List<ItemPhoto> _photos(List<String> names) => [
       for (var i = 0; i < names.length; i++)
         ItemPhoto(id: ++_photoId, url: 'assets/mock/${names[i]}.jpg', sortOrder: i),
     ];
+
+String _shortName(int userId) {
+  final parts = mockUsers[userId - 1].fullName.split(' ');
+  return '${parts.first} ${parts.last[0]}.';
+}
 
 Item _item({
   required int id,
@@ -74,7 +79,9 @@ Item _item({
     location: _loc(locationId),
     eventDate: eventDate,
     createdAt: eventDate.add(Duration(hours: createdHoursAfterEvent)),
-    ownerId: ownerId,
+    // Mock'ta oturum açan kullanıcı her zaman mockCurrentUser (u1 = 1).
+    isOwner: ownerId == 1,
+    ownerName: _shortName(ownerId),
     verificationQuestion: type == ItemType.found ? verificationQuestion : null,
     photos: _photos(photos),
   );

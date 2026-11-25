@@ -47,17 +47,36 @@ class _FakeAdapter implements HttpClientAdapter {
 }
 
 void main() {
-  final item = mockItems.first;
-  final itemJson = item.toJson()
-    ..['photos'] = [
-      {'id': 1, 'url': '/uploads/cuzdan.jpg', 'sortOrder': 0},
-      {'id': 2, 'url': 'https://cdn.test/x.jpg', 'sortOrder': 1},
-    ];
+  // Web'in gerçek yanıt biçimleri (Dtos/ItemDtos.cs; yerel API'den alınan örnek).
+  const listJson = {
+    'id': 7,
+    'type': 'Found',
+    'status': 'Published',
+    'title': 'Siyah deri cüzdan',
+    'categoryId': 3,
+    'categoryName': 'Cüzdan',
+    'categoryIcon': 'bi-wallet2',
+    'locationId': 3,
+    'locationName': 'Merkezi Derslik – Amfi',
+    'eventDate': '2026-11-20T00:00:00Z',
+    'createdAt': '2026-11-20T10:15:00Z',
+    'coverPhotoUrl': '/uploads/items/7/a.jpg',
+  };
+  const detailJson = {
+    ...listJson,
+    'description': 'Amfinin arka sıralarında buldum.',
+    'isAtOffice': false,
+    'ownerName': 'Ayşe Y.',
+    'isOwner': true,
+    'verificationQuestion': 'Kart hangi bankanın?',
+    'rejectionReason': null,
+    'photoUrls': ['/uploads/items/7/a.jpg', 'https://cdn.test/x.jpg'],
+  };
 
   test('liste isteği filtreleri sorgu parametresi olarak gönderir', () async {
     final (repo, adapter) = _repo({
       '/api/items': {
-        'items': [itemJson],
+        'items': [listJson],
         'page': 2,
         'pageSize': 10,
         'totalCount': 11,
@@ -74,7 +93,7 @@ void main() {
     );
 
     expect(adapter.last!.queryParameters, {
-      'type': 'found',
+      'type': 'Found',
       'q': 'cüzdan',
       'categoryId': 2,
       'locationId': 3,
@@ -82,7 +101,18 @@ void main() {
       'page': 2,
       'pageSize': 10,
     });
-    expect(res.items.single.title, item.title);
+    final item = res.items.single;
+    expect(item.title, 'Siyah deri cüzdan');
+    expect(item.type, ItemType.found);
+    expect(item.status, ItemStatus.published);
+    expect(
+      item.category,
+      const Category(id: 3, name: 'Cüzdan', icon: 'bi-wallet2'),
+    );
+    expect(item.location.name, 'Merkezi Derslik – Amfi');
+    expect(item.eventDate, DateTime.utc(2026, 11, 20));
+    expect(item.coverPhoto!.url, 'http://api.test:5080/uploads/items/7/a.jpg');
+    expect(item.description, isEmpty);
     expect(res.page, 2);
     expect(res.hasMore, isFalse);
   });
@@ -97,28 +127,51 @@ void main() {
   });
 
   test('göreli fotoğraf adresi API adresine göre mutlak yapılır', () async {
-    final (repo, _) = _repo({'/api/items/1': itemJson});
+    final (repo, _) = _repo({'/api/items/7': detailJson});
 
-    final res = await repo.getItem(1);
+    final res = await repo.getItem(7);
     expect(res.photos.map((p) => p.url), [
-      'http://api.test:5080/uploads/cuzdan.jpg',
+      'http://api.test:5080/uploads/items/7/a.jpg',
       'https://cdn.test/x.jpg',
     ]);
+    expect(res.description, 'Amfinin arka sıralarında buldum.');
+    expect(res.isOwner, isTrue);
+    expect(res.ownerName, 'Ayşe Y.');
+    expect(res.verificationQuestion, 'Kart hangi bankanın?');
   });
 
   test('kategori ve bina listeleri', () async {
     final (repo, _) = _repo({
       '/api/categories': [for (final c in mockCategories.take(2)) c.toJson()],
-      '/api/locations': [for (final l in mockLocations.take(3)) l.toJson()],
+      '/api/locations': [
+        {
+          'id': 8,
+          'building': 'Güvenlik / Kayıp Eşya Bürosu',
+          'floorOrRoom': null,
+          'latitude': null,
+          'longitude': null,
+        },
+      ],
     });
 
     expect(await repo.getCategories(), mockCategories.take(2).toList());
-    expect(await repo.getLocations(), mockLocations.take(3).toList());
+    expect(
+      (await repo.getLocations()).single.name,
+      'Güvenlik / Kayıp Eşya Bürosu',
+    );
   });
 
   test('sunucu hatası AppException olarak gelir', () async {
     final (repo, _) = _repo({}, status: 500);
 
     await expectLater(repo.getItems(), throwsA(isA<ServerException>()));
+  });
+
+  test('beklenmeyen biçim çökme yerine anlamlı hata verir', () async {
+    final (repo, _) = _repo({
+      '/api/items/1': {...detailJson, 'type': 'Kayip'},
+    });
+
+    await expectLater(repo.getItem(1), throwsA(isA<ServerException>()));
   });
 }
