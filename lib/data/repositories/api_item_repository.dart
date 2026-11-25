@@ -1,4 +1,6 @@
 import '../api/api_client.dart';
+import '../api/app_exception.dart';
+import '../api/item_dto.dart';
 import '../models/models.dart';
 import 'item_repository.dart';
 
@@ -6,13 +8,14 @@ import 'item_repository.dart';
 ///
 /// | İstek                    | Yanıt                         |
 /// | ------------------------ | ----------------------------- |
-/// | `GET /api/items`         | `PagedResult<Item>`           |
-/// | `GET /api/items/{id}`    | `Item`                        |
+/// | `GET /api/items`         | `{ items: ItemListDto[], page, pageSize, totalCount }` |
+/// | `GET /api/items/{id}`    | `ItemDetailDto`               |
 /// | `GET /api/categories`    | `Category[]`                  |
 /// | `GET /api/locations`     | `Location[]`                  |
 ///
-/// `/api/items` sorgu parametreleri: `type` (lost/found), `q`, `categoryId`,
-/// `locationId`, `from` (ISO-8601, UTC), `page`, `pageSize`.
+/// `/api/items` sorgu parametreleri: `type` (Lost/Found), `q`, `categoryId`,
+/// `locationId`, `from` (ISO-8601, UTC), `page`, `pageSize` (en fazla 50).
+/// İlan DTO'ları [ItemDto] ile modele çevrilir.
 class ApiItemRepository implements ItemRepository {
   ApiItemRepository(this._client);
 
@@ -32,7 +35,7 @@ class ApiItemRepository implements ItemRepository {
     return _client.get(
       '/api/items',
       query: {
-        'type': ?type?.name,
+        'type': ?type?.apiValue,
         if (q != null && q.isNotEmpty) 'q': q,
         'categoryId': ?categoryId,
         'locationId': ?locationId,
@@ -40,43 +43,63 @@ class ApiItemRepository implements ItemRepository {
         'page': page,
         'pageSize': pageSize,
       },
-      parse: (data) =>
-          PagedResult.fromJson(data! as Map<String, dynamic>, _parseItem),
+      parse: (data) => _parse(
+        () => PagedResult.fromJson(
+          data! as Map<String, dynamic>,
+          (json) => ItemDto.fromList(json! as Map<String, dynamic>, _photoUrl),
+        ),
+      ),
     );
   }
 
   @override
-  Future<Item> getItem(int id) =>
-      _client.get('/api/items/$id', parse: _parseItem);
+  Future<Item> getItem(int id) => _client.get(
+    '/api/items/$id',
+    parse: (data) => _parse(
+      () => ItemDto.fromDetail(data! as Map<String, dynamic>, _photoUrl),
+    ),
+  );
 
   @override
   Future<List<Category>> getCategories() => _client.get(
     '/api/categories',
-    parse: (data) => [
-      for (final c in data! as List)
-        Category.fromJson(c as Map<String, dynamic>),
-    ],
+    parse: (data) => _parse(
+      () => [
+        for (final c in data! as List)
+          Category.fromJson(c as Map<String, dynamic>),
+      ],
+    ),
   );
 
   @override
   Future<List<Location>> getLocations() => _client.get(
     '/api/locations',
-    parse: (data) => [
-      for (final l in data! as List)
-        Location.fromJson(l as Map<String, dynamic>),
-    ],
+    parse: (data) => _parse(
+      () => [
+        for (final l in data! as List)
+          Location.fromJson(l as Map<String, dynamic>),
+      ],
+    ),
   );
 
   /// Sunucu fotoğraf adresini göreli (`/uploads/x.jpg`) verebilir;
   /// ekranlar her zaman mutlak adres görür.
-  Item _parseItem(Object? json) {
-    final item = Item.fromJson(json! as Map<String, dynamic>);
-    final base = Uri.parse(_client.dio.options.baseUrl);
-    return item.copyWith(
-      photos: [
-        for (final p in item.photos)
-          p.copyWith(url: base.resolve(p.url).toString()),
-      ],
-    );
+  String _photoUrl(String url) =>
+      Uri.parse(_client.dio.options.baseUrl).resolve(url).toString();
+
+  /// Beklenmeyen biçimde gelen yanıt uygulamayı çökertmesin.
+  T _parse<T>(T Function() parse) {
+    try {
+      return parse();
+    } on FormatException {
+      throw _unexpected;
+    } on TypeError {
+      throw _unexpected;
+    }
   }
+
+  static const _unexpected = ServerException(
+    200,
+    'Sunucudan beklenmeyen bir yanıt alındı.',
+  );
 }

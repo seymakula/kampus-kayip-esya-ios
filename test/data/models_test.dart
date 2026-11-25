@@ -9,10 +9,10 @@ void main() {
     }
   });
 
-  test('enumlar camelCase string olarak yazılır', () {
+  test('enumlar web API ile aynı metinle yazılır', () {
     final json = mockItems.first.toJson();
-    expect(json['type'], 'found');
-    expect(json['status'], 'published');
+    expect(json['type'], 'Found');
+    expect(json['status'], 'Published');
     expect(json['category'], isA<Map<String, dynamic>>());
   });
 
@@ -47,5 +47,25 @@ void main() {
     for (final i in mockItems) {
       if (i.type == ItemType.lost) expect(i.verificationQuestion, isNull);
     }
+  });
+
+  test('Location web LocationDto biçimini okur', () {
+    final l = Location.fromJson({
+      'id': 3,
+      'building': 'Merkezi Derslik',
+      'floorOrRoom': 'Amfi',
+      'latitude': null,
+      'longitude': null,
+    });
+    expect(l.name, 'Merkezi Derslik – Amfi');
+    expect(l.hasCoordinates, isFalse);
+    expect(mockLocations.first.name, mockLocations.first.building);
+  });
+
+  test('enum API adı ve harf duyarsız okuma', () {
+    expect(ItemType.found.apiValue, 'Found');
+    expect(ItemStatus.published.apiValue, 'Published');
+    expect(enumFromApi(ItemType.values, 'LOST'), ItemType.lost);
+    expect(() => enumFromApi(ItemType.values, 'Kayip'), throwsFormatException);
   });
 }

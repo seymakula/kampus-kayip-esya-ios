@@ -2,9 +2,9 @@ import 'package:json_annotation/json_annotation.dart';
 
 /// İlan türü: kayıp mı, bulunan mı.
 enum ItemType {
-  @JsonValue('lost')
+  @JsonValue('Lost')
   lost,
-  @JsonValue('found')
+  @JsonValue('Found')
   found;
 
   String get label => switch (this) {
@@ -21,15 +21,15 @@ enum ItemType {
 
 /// İlanın yaşam döngüsü. Onay web panelindeki görevlide.
 enum ItemStatus {
-  @JsonValue('pending')
+  @JsonValue('Pending')
   pending,
-  @JsonValue('published')
+  @JsonValue('Published')
   published,
-  @JsonValue('rejected')
+  @JsonValue('Rejected')
   rejected,
-  @JsonValue('resolved')
+  @JsonValue('Resolved')
   resolved,
-  @JsonValue('archived')
+  @JsonValue('Archived')
   archived;
 
   String get label => switch (this) {
@@ -68,4 +68,19 @@ enum ClaimKind {
         ClaimKind.owner => 'Bu benim',
         ClaimKind.finder => 'Ben buldum',
       };
+}
+
+/// Web API enum'ları metin olarak ve büyük harfle başlayarak taşır
+/// (`Lost`, `Published`). Sorgu parametresi ve istek gövdesi için.
+extension ApiEnumName on Enum {
+  String get apiValue => '${name[0].toUpperCase()}${name.substring(1)}';
+}
+
+/// API'den gelen metni enum'a çevirir; büyük/küçük harf duyarsız.
+T enumFromApi<T extends Enum>(List<T> values, Object? raw) {
+  final text = raw?.toString().toLowerCase();
+  return values.firstWhere(
+    (v) => v.name.toLowerCase() == text,
+    orElse: () => throw FormatException('Bilinmeyen değer: $raw'),
+  );
 }

@@ -22,10 +22,21 @@ abstract class Item with _$Item {
     required Location location,
     required DateTime eventDate,
     required DateTime createdAt,
-    required int ownerId,
 
-    /// Yalnızca "Bulundu" ilanlarında dolu.
+    /// Bakan kişi ilanın sahibi mi (API detayda verir; sahibin kimliği verilmez).
+    @Default(false) bool isOwner,
+
+    /// Sahibin kısaltılmış adı ("Ayşe Y."); yalnızca detayda.
+    String? ownerName,
+
+    /// Eşya kayıp eşya bürosuna teslim edildi mi.
+    @Default(false) bool isAtOffice,
+
+    /// Yalnızca "Bulundu" ilanlarında; API yalnızca sahibine ve görevliye verir.
     String? verificationQuestion,
+
+    /// Görevlinin ret sebebi; yalnızca sahibine görünür.
+    String? rejectionReason,
     @Default(<ItemPhoto>[]) List<ItemPhoto> photos,
   }) = _Item;
 

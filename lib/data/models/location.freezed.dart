@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Location {
 
- int get id; String get name; double get latitude; double get longitude;
+ int get id; String get building; String? get floorOrRoom; double? get latitude; double? get longitude;
 /// Create a copy of Location
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -30,20 +30,20 @@ $LocationCopyWith<Location> get copyWith => _$LocationCopyWithImpl<Location>(thi
 @override
 bool operator ==(Object other) {
   final _this = this as Location;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Location&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.latitude, _this.latitude) || other.latitude == _this.latitude)&&(identical(other.longitude, _this.longitude) || other.longitude == _this.longitude));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Location&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.building, _this.building) || other.building == _this.building)&&(identical(other.floorOrRoom, _this.floorOrRoom) || other.floorOrRoom == _this.floorOrRoom)&&(identical(other.latitude, _this.latitude) || other.latitude == _this.latitude)&&(identical(other.longitude, _this.longitude) || other.longitude == _this.longitude));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as Location;
-  return Object.hash(runtimeType,_this.id,_this.name,_this.latitude,_this.longitude);
+  return Object.hash(runtimeType,_this.id,_this.building,_this.floorOrRoom,_this.latitude,_this.longitude);
 }
 
 @override
 String toString() {
   final _this = this as Location;
-  return 'Location(id: ${_this.id}, name: ${_this.name}, latitude: ${_this.latitude}, longitude: ${_this.longitude})';
+  return 'Location(id: ${_this.id}, building: ${_this.building}, floorOrRoom: ${_this.floorOrRoom}, latitude: ${_this.latitude}, longitude: ${_this.longitude})';
 }
 
 
@@ -54,7 +54,7 @@ abstract mixin class $LocationCopyWith<$Res>  {
   factory $LocationCopyWith(Location value, $Res Function(Location) _then) = _$LocationCopyWithImpl;
 @useResult
 $Res call({
- int id, String name, double latitude, double longitude
+ int id, String building, String? floorOrRoom, double? latitude, double? longitude
 });
 
 
@@ -71,13 +71,14 @@ class _$LocationCopyWithImpl<$Res>
 
 /// Create a copy of Location
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? latitude = null,Object? longitude = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? building = null,Object? floorOrRoom = freezed,Object? latitude = freezed,Object? longitude = freezed,}) {
   return _then(Location(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
-as String,latitude: null == latitude ? _self.latitude : latitude // ignore: cast_nullable_to_non_nullable
-as double,longitude: null == longitude ? _self.longitude : longitude // ignore: cast_nullable_to_non_nullable
-as double,
+as int,building: null == building ? _self.building : building // ignore: cast_nullable_to_non_nullable
+as String,floorOrRoom: freezed == floorOrRoom ? _self.floorOrRoom : floorOrRoom // ignore: cast_nullable_to_non_nullable
+as String?,latitude: freezed == latitude ? _self.latitude : latitude // ignore: cast_nullable_to_non_nullable
+as double?,longitude: freezed == longitude ? _self.longitude : longitude // ignore: cast_nullable_to_non_nullable
+as double?,
   ));
 }
 
@@ -162,10 +163,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  double latitude,  double longitude)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String building,  String? floorOrRoom,  double? latitude,  double? longitude)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Location() when $default != null:
-return $default(_that.id,_that.name,_that.latitude,_that.longitude);case _:
+return $default(_that.id,_that.building,_that.floorOrRoom,_that.latitude,_that.longitude);case _:
   return orElse();
 
 }
@@ -183,10 +184,10 @@ return $default(_that.id,_that.name,_that.latitude,_that.longitude);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  double latitude,  double longitude)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String building,  String? floorOrRoom,  double? latitude,  double? longitude)  $default,) {final _that = this;
 switch (_that) {
 case _Location():
-return $default(_that.id,_that.name,_that.latitude,_that.longitude);case _:
+return $default(_that.id,_that.building,_that.floorOrRoom,_that.latitude,_that.longitude);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -203,10 +204,10 @@ return $default(_that.id,_that.name,_that.latitude,_that.longitude);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  double latitude,  double longitude)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String building,  String? floorOrRoom,  double? latitude,  double? longitude)?  $default,) {final _that = this;
 switch (_that) {
 case _Location() when $default != null:
-return $default(_that.id,_that.name,_that.latitude,_that.longitude);case _:
+return $default(_that.id,_that.building,_that.floorOrRoom,_that.latitude,_that.longitude);case _:
   return null;
 
 }
@@ -217,14 +218,15 @@ return $default(_that.id,_that.name,_that.latitude,_that.longitude);case _:
 /// @nodoc
 @JsonSerializable()
 
-class _Location implements Location {
-  const _Location({required this.id, required this.name, required this.latitude, required this.longitude});
+class _Location extends Location {
+  const _Location({required this.id, required this.building, this.floorOrRoom, this.latitude, this.longitude}): super._();
   factory _Location.fromJson(Map<String, dynamic> json) => _$LocationFromJson(json);
 
 @override final  int id;
-@override final  String name;
-@override final  double latitude;
-@override final  double longitude;
+@override final  String building;
+@override final  String? floorOrRoom;
+@override final  double? latitude;
+@override final  double? longitude;
 
 /// Create a copy of Location
 /// with the given fields replaced by the non-null parameter values.
@@ -239,18 +241,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Location&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.latitude, latitude) || other.latitude == latitude)&&(identical(other.longitude, longitude) || other.longitude == longitude));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Location&&(identical(other.id, id) || other.id == id)&&(identical(other.building, building) || other.building == building)&&(identical(other.floorOrRoom, floorOrRoom) || other.floorOrRoom == floorOrRoom)&&(identical(other.latitude, latitude) || other.latitude == latitude)&&(identical(other.longitude, longitude) || other.longitude == longitude));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,name,latitude,longitude);
+    return Object.hash(runtimeType,id,building,floorOrRoom,latitude,longitude);
 }
 
 @override
 String toString() {
-    return 'Location(id: $id, name: $name, latitude: $latitude, longitude: $longitude)';
+    return 'Location(id: $id, building: $building, floorOrRoom: $floorOrRoom, latitude: $latitude, longitude: $longitude)';
 }
 
 
@@ -261,7 +263,7 @@ abstract mixin class _$LocationCopyWith<$Res> implements $LocationCopyWith<$Res>
   factory _$LocationCopyWith(_Location value, $Res Function(_Location) _then) = __$LocationCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String name, double latitude, double longitude
+ int id, String building, String? floorOrRoom, double? latitude, double? longitude
 });
 
 
@@ -278,13 +280,14 @@ class __$LocationCopyWithImpl<$Res>
 
 /// Create a copy of Location
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? latitude = null,Object? longitude = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? building = null,Object? floorOrRoom = freezed,Object? latitude = freezed,Object? longitude = freezed,}) {
   return _then(_Location(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
-as String,latitude: null == latitude ? _self.latitude : latitude // ignore: cast_nullable_to_non_nullable
-as double,longitude: null == longitude ? _self.longitude : longitude // ignore: cast_nullable_to_non_nullable
-as double,
+as int,building: null == building ? _self.building : building // ignore: cast_nullable_to_non_nullable
+as String,floorOrRoom: freezed == floorOrRoom ? _self.floorOrRoom : floorOrRoom // ignore: cast_nullable_to_non_nullable
+as String?,latitude: freezed == latitude ? _self.latitude : latitude // ignore: cast_nullable_to_non_nullable
+as double?,longitude: freezed == longitude ? _self.longitude : longitude // ignore: cast_nullable_to_non_nullable
+as double?,
   ));
 }
 
