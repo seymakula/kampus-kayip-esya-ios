@@ -59,10 +59,8 @@ abstract class ItemRepository {
   Future<Item> createItem(NewItem item);
 
   /// `POST /api/items/{id}/photos` (multipart, alan adı `files`, en fazla 5).
-  /// [onProgress] 0–1 arası gönderim oranı.
-  ///
-  /// Hafta 5 (Barış): yüklemeden önce sıkıştırma (uzun kenar 1280, JPEG ~75)
-  /// buraya eklenecek; ekran bu imzayı kullanmaya devam eder.
+  /// Fotoğraflar önce sıkıştırılır (uzun kenar 1280, JPEG 75, EXIF silinir).
+  /// [onProgress] 0–1: ilk %20 sıkıştırma, kalanı gönderim.
   Future<Item> uploadPhotos(
     int itemId,
     List<String> filePaths, {

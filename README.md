@@ -99,12 +99,19 @@ flutter run --dart-define=USE_MOCK=true
 | `GET /api/items/{id}` | `Item`                                       |
 | `GET /api/categories` | `Category[]`                                 |
 | `GET /api/locations`  | `Location[]`                                 |
+| `POST /api/items`     | Yeni ilan (Onay bekliyor)                    |
+| `POST /api/items/{id}/photos` | Fotoğraflar (multipart, alan adı `files`, en fazla 5) |
 
-`/api/items` sorgu parametreleri (hepsi isteğe bağlı): `type` (`lost` / `found`),
+`/api/items` sorgu parametreleri (hepsi isteğe bağlı): `type` (`Lost` / `Found`),
 `q` (başlık ve açıklamada arama), `categoryId`, `locationId`, `from` (ISO-8601 UTC;
 bu tarihten sonraki olaylar), `page` (1'den başlar), `pageSize` (varsayılan 10).
 Yalnızca yayındaki ilanlar, en yeni önce döner. Fotoğraf adresleri göreli
 (`/uploads/x.jpg`) olabilir; uygulama API adresine göre tamamlar.
+
+Fotoğraflar yüklenmeden önce telefonda sıkıştırılır (`data/photos/photo_compressor.dart`):
+uzun kenar en fazla 1280 px, JPEG kalite 75, EXIF (GPS konumu dahil) silinir. 4032×3024
+bir iPhone fotoğrafı (3–5 MB) böylece yaklaşık 1280×960 ve birkaç yüz KB olur.
+Sıkıştırma başarısız olursa özgün dosya gönderilir.
 
 ## Durum yönetimi (Riverpod)
 

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -7,6 +8,7 @@ import 'package:kampus_kayip_esya/data/api/api_client.dart';
 import 'package:kampus_kayip_esya/data/api/app_exception.dart';
 import 'package:kampus_kayip_esya/data/mock/mock_data.dart';
 import 'package:kampus_kayip_esya/data/models/models.dart';
+import 'package:kampus_kayip_esya/data/photos/photo_compressor.dart';
 import 'package:kampus_kayip_esya/data/repositories/api_item_repository.dart';
 import 'package:kampus_kayip_esya/data/repositories/item_repository.dart';
 
@@ -25,6 +27,8 @@ class _FakeAdapter implements HttpClientAdapter {
     Future<void>? cancelFuture,
   ) async {
     last = options;
+    // Gerçek sunucu gibi gövdeyi oku: gönderim ilerlemesi bunu izler.
+    await requestStream?.drain<void>();
     return ResponseBody.fromString(
       jsonEncode(routes[options.path] ?? {}),
       status,
@@ -38,14 +42,35 @@ class _FakeAdapter implements HttpClientAdapter {
   void close({bool force = false}) {}
 }
 
+/// Telefon kütüphanesi testte çalışmaz: sabit baytlar döndüren sıkıştırıcı.
+class _FakeCompressor implements PhotoCompressor {
+  _FakeCompressor({this.fail = false});
+
+  final bool fail;
+  final compressed = <String>[];
+
+  static final bytes = Uint8List.fromList([0xFF, 0xD8, 0x01, 0x02]);
+
+  @override
+  Future<CompressedPhoto> compress(String path) async {
+    if (fail) throw StateError('sıkıştırılamadı');
+    compressed.add(path);
+    return CompressedPhoto(bytes: bytes, filename: jpegFileName(path));
+  }
+}
+
 (ApiItemRepository, _FakeAdapter) _repo(
   Map<String, Object?> routes, {
   int status = 200,
+  PhotoCompressor? compressor,
 }) {
   final adapter = _FakeAdapter(routes, status: status);
   final client = ApiClient(baseUrl: 'http://api.test:5080')
     ..dio.httpClientAdapter = adapter;
-  return (ApiItemRepository(client), adapter);
+  return (
+    ApiItemRepository(client, compressor: compressor ?? _FakeCompressor()),
+    adapter,
+  );
 }
 
 void main() {
@@ -220,5 +245,72 @@ void main() {
     expect(adapter.last!.path, '/api/items/7/photos');
     expect(form.files.map((f) => f.key), ['files', 'files']);
     expect(form.files.map((f) => f.value.filename), ['a.jpg', 'b.jpg']);
+  });
+
+  group('fotoğraf yükleme sıkıştırması', () {
+    late Directory dir;
+    late String heic;
+    late String png;
+
+    setUp(() {
+      dir = Directory.systemTemp.createTempSync('foto');
+      heic = (File(
+        '${dir.path}/IMG_0042.HEIC',
+      )..writeAsBytesSync([1, 2, 3])).path;
+      png = (File('${dir.path}/ekran.png')..writeAsBytesSync([4, 5, 6])).path;
+    });
+    tearDown(() => dir.deleteSync(recursive: true));
+
+    test('sunucuya sıkıştırılmış JPEG gider', () async {
+      final compressor = _FakeCompressor();
+      final (repo, adapter) = _repo({
+        '/api/items/7/photos': detailJson,
+      }, compressor: compressor);
+
+      await repo.uploadPhotos(7, [heic, png]);
+
+      expect(compressor.compressed, [heic, png]);
+      final form = adapter.last!.data as FormData;
+      expect(form.files.map((f) => f.value.filename), [
+        'IMG_0042.jpg',
+        'ekran.jpg',
+      ]);
+      expect(
+        form.files.map((f) => f.value.contentType?.mimeType),
+        everyElement('image/jpeg'),
+      );
+      expect(
+        form.files.map((f) => f.value.length),
+        everyElement(_FakeCompressor.bytes.length),
+      );
+    });
+
+    test(
+      'ilerleme önce sıkıştırma (%20), sonra gönderim; 1 ile biter',
+      () async {
+        final (repo, _) = _repo({'/api/items/7/photos': detailJson});
+
+        final progress = <double>[];
+        await repo.uploadPhotos(7, [heic, png], onProgress: progress.add);
+
+        expect(progress.take(2), [0.1, 0.2]);
+        expect(progress.last, closeTo(1, 1e-9));
+        for (var i = 1; i < progress.length; i++) {
+          expect(progress[i], greaterThanOrEqualTo(progress[i - 1]));
+        }
+      },
+    );
+
+    test('sıkıştırma başarısız olursa özgün dosya gönderilir', () async {
+      final (repo, adapter) = _repo({
+        '/api/items/7/photos': detailJson,
+      }, compressor: _FakeCompressor(fail: true));
+
+      await repo.uploadPhotos(7, [heic]);
+
+      final form = adapter.last!.data as FormData;
+      expect(form.files.single.value.filename, 'IMG_0042.HEIC');
+      expect(form.files.single.value.length, 3);
+    });
   });
 }
