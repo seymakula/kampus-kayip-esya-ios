@@ -59,6 +59,22 @@ Future<void> _pumpHome(WidgetTester tester, {ItemRepository? repo}) async {
   await tester.pumpAndSettle();
 }
 
+/// Liste, [target] görünene kadar parmakla kaydırılır gibi adım adım iner;
+/// kart yüksekliğine bağlı değildir.
+Future<void> _scrollTo(WidgetTester tester, Finder target) async {
+  await tester.scrollUntilVisible(
+    target,
+    400,
+    scrollable: find
+        .descendant(
+          of: find.byType(ListView),
+          matching: find.byType(Scrollable),
+        )
+        .first,
+  );
+  await tester.pumpAndSettle();
+}
+
 List<Item> _visibleItems(WidgetTester tester) => tester
     .widgetList<ItemCard>(find.byType(ItemCard))
     .map((c) => c.item)
@@ -133,15 +149,12 @@ void main() {
     await _pumpHome(tester, repo: repo);
     expect(repo.requestedPages, [1]);
 
-    await tester.drag(find.byType(ListView), const Offset(0, -3000));
-    await tester.pumpAndSettle();
+    await _scrollTo(tester, find.text('İlan 10'));
     expect(repo.requestedPages, [1, 2]);
 
-    await tester.drag(find.byType(ListView), const Offset(0, -3000));
-    await tester.pumpAndSettle();
+    await _scrollTo(tester, find.text('İlan 20'));
     expect(repo.requestedPages, [1, 2, 3]);
-    await tester.drag(find.byType(ListView), const Offset(0, -3000));
-    await tester.pumpAndSettle();
+    await _scrollTo(tester, find.text('İlan 25'));
     expect(find.text('İlan 25'), findsOneWidget);
     // Son sayfadan sonra yükleniyor göstergesi kalmaz.
     expect(find.byType(CircularProgressIndicator), findsNothing);
@@ -151,16 +164,14 @@ void main() {
     final repo = FakeItemRepository(count: 25)..failingPages.add(2);
     await _pumpHome(tester, repo: repo);
 
-    await tester.drag(find.byType(ListView), const Offset(0, -3000));
-    await tester.pumpAndSettle();
+    await _scrollTo(tester, find.text('Sunucuya bağlanılamadı.'));
     expect(find.text('Sunucuya bağlanılamadı.'), findsOneWidget);
     expect(_visibleItems(tester), isNotEmpty);
 
     repo.failingPages.clear();
     await tester.tap(find.widgetWithText(TextButton, 'Tekrar dene'));
     await tester.pumpAndSettle();
-    await tester.drag(find.byType(ListView), const Offset(0, -3000));
-    await tester.pumpAndSettle();
+    await _scrollTo(tester, find.text('İlan 20'));
     expect(find.text('İlan 20'), findsOneWidget);
   });
 }

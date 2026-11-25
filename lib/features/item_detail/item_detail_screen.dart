@@ -6,7 +6,7 @@ import '../../app/router/app_routes.dart';
 import '../../data/models/models.dart';
 import '../../shared/utils/date_format.dart';
 import '../../shared/widgets/async_value_view.dart';
-import '../../shared/widgets/item_card.dart';
+import '../../shared/widgets/tag_badge.dart';
 import 'item_detail_provider.dart';
 import 'widgets/photo_carousel.dart';
 
@@ -77,46 +77,53 @@ class _Details extends StatelessWidget {
             runSpacing: 4,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              ItemTypeBadge(type: item.type),
+              ItemTypeBadge(
+                type: item.type,
+                large: true,
+                hole: theme.scaffoldBackgroundColor,
+              ),
               if (item.status != ItemStatus.published)
-                Text(
-                  item.status.label,
-                  style: theme.textTheme.labelMedium?.copyWith(
-                    color: colors.onSurfaceVariant,
-                  ),
-                ),
+                StatusPill(status: item.status),
             ],
           ),
           const SizedBox(height: 8),
           Text(
             item.title,
-            style: theme.textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+            style: theme.textTheme.headlineSmall,
           ),
           const SizedBox(height: 16),
-          _InfoRow(
-            icon: Icons.category_outlined,
-            label: 'Kategori',
-            value: item.category.name,
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Column(
+                children: [
+                  _InfoRow(
+                    icon: Icons.category_outlined,
+                    label: 'Kategori',
+                    value: item.category.name,
+                  ),
+                  _InfoRow(
+                    icon: Icons.place_outlined,
+                    label: lost ? 'Kaybolduğu yer' : 'Bulunduğu yer',
+                    value: item.location.name,
+                  ),
+                  _InfoRow(
+                    icon: Icons.event_outlined,
+                    label: lost ? 'Kaybolma tarihi' : 'Bulunma tarihi',
+                    value:
+                        '${formatDateTime(item.eventDate)} · '
+                        '${formatRelative(item.eventDate)}',
+                  ),
+                  _InfoRow(
+                    icon: Icons.schedule,
+                    label: 'İlan tarihi',
+                    value: formatDateTime(item.createdAt),
+                  ),
+                ],
+              ),
+            ),
           ),
-          _InfoRow(
-            icon: Icons.place_outlined,
-            label: lost ? 'Kaybolduğu yer' : 'Bulunduğu yer',
-            value: item.location.name,
-          ),
-          _InfoRow(
-            icon: Icons.event_outlined,
-            label: lost ? 'Kaybolma tarihi' : 'Bulunma tarihi',
-            value:
-                '${formatDateTime(item.eventDate)} · '
-                '${formatRelative(item.eventDate)}',
-          ),
-          _InfoRow(
-            icon: Icons.schedule,
-            label: 'İlan tarihi',
-            value: formatDateTime(item.createdAt),
-          ),
+          const SizedBox(height: 8),
           const Divider(height: 32),
           Text('Açıklama', style: theme.textTheme.titleSmall),
           const SizedBox(height: 8),

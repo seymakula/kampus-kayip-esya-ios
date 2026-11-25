@@ -4,8 +4,12 @@ import '../../app/theme/app_colors.dart';
 import '../../data/models/models.dart';
 import '../utils/date_format.dart';
 import 'item_photo_image.dart';
+import 'tag_badge.dart';
 
-/// Listelerdeki ilan kartı: kapak fotoğrafı, tür rozeti, başlık, bina ve tarih.
+export 'tag_badge.dart' show ItemTypeBadge;
+
+/// Listelerdeki ilan kartı (web `.item-card`): üstte 16:10 kapak fotoğrafı ve
+/// sol üstte tür etiketi; altta başlık, bina · tarih ve kategori çipi.
 /// Ana sayfa, arama sonuçları ve "İlanlarım" aynı kartı kullanır.
 class ItemCard extends StatelessWidget {
   const ItemCard({super.key, required this.item, this.onTap, this.now});
@@ -19,112 +23,88 @@ class ItemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colors = theme.colorScheme;
+    final p = context.palette;
     final meta = theme.textTheme.bodySmall?.copyWith(
-      color: colors.onSurfaceVariant,
+      color: p.muted,
+      fontSize: 13,
     );
+    final cover = item.coverPhoto;
 
     return Card(
-      margin: EdgeInsets.zero,
       child: InkWell(
         onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: SizedBox.square(
-                  dimension: 88,
-                  child: ItemPhotoImage(photo: item.coverPhoto),
-                ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            AspectRatio(
+              aspectRatio: 16 / 10,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  if (cover != null)
+                    ColoredBox(
+                      color: p.surface2,
+                      child: ItemPhotoImage(photo: cover),
+                    )
+                  else
+                    ColoredBox(
+                      color: typeTint(p, item.type),
+                      child: Center(
+                        child: PlaceholderTag(
+                          type: item.type,
+                          icon: categoryIcon(item.category.icon),
+                        ),
+                      ),
+                    ),
+                  Positioned(
+                    left: 12,
+                    top: 12,
+                    child: ItemTypeBadge(
+                      type: item.type,
+                      hole: cover != null ? p.surface2 : typeTint(p, item.type),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        ItemTypeBadge(type: item.type),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            item.category.name,
-                            style: meta,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      item.title,
-                      style: theme.textTheme.titleMedium,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.place_outlined,
-                          size: 14,
-                          color: colors.onSurfaceVariant,
-                        ),
-                        const SizedBox(width: 2),
-                        Expanded(
-                          child: Text(
-                            item.location.name,
-                            style: meta,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          formatRelative(item.eventDate, now: now),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.title,
+                    style: theme.textTheme.titleMedium,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Icon(Icons.place_outlined, size: 15, color: p.muted),
+                      const SizedBox(width: 3),
+                      Flexible(
+                        child: Text(
+                          item.location.name,
                           style: meta,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ],
-                    ),
-                  ],
-                ),
+                      ),
+                      Text(' · ', style: meta),
+                      Text(
+                        formatRelative(item.eventDate, now: now),
+                        style: meta,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  CategoryChip(label: item.category.name),
+                ],
               ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// "Kayıp" / "Bulundu" rozeti; renkler [AppColors]'tan.
-class ItemTypeBadge extends StatelessWidget {
-  const ItemTypeBadge({super.key, required this.type});
-
-  final ItemType type;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = switch (type) {
-      ItemType.lost => AppColors.lost,
-      ItemType.found => AppColors.found,
-    };
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-        child: Text(
-          type.label,
-          style: Theme.of(context).textTheme.labelSmall
-              ?.copyWith(color: Colors.white, fontWeight: FontWeight.w600),
+            ),
+          ],
         ),
       ),
     );
