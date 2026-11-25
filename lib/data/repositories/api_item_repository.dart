@@ -4,6 +4,7 @@ import '../api/api_client.dart';
 import '../api/app_exception.dart';
 import '../api/item_dto.dart';
 import '../models/models.dart';
+import '../photos/photo_compressor.dart';
 import 'item_repository.dart';
 
 /// Ortak Web API (BLM4581) üzerinden ilanlar.
@@ -19,9 +20,18 @@ import 'item_repository.dart';
 /// `locationId`, `from` (ISO-8601, UTC), `page`, `pageSize` (en fazla 50).
 /// İlan DTO'ları [ItemDto] ile modele çevrilir.
 class ApiItemRepository implements ItemRepository {
-  ApiItemRepository(this._client);
+  ApiItemRepository(
+    this._client, {
+    this.compressor = const JpegPhotoCompressor(),
+  });
 
   final ApiClient _client;
+
+  /// Yüklemeden önce fotoğrafı küçültür; testlerde sahtesi verilir.
+  final PhotoCompressor compressor;
+
+  /// İlerlemenin sıkıştırmaya ayrılan payı; kalanı ağ gönderimi.
+  static const _compressShare = 0.2;
 
   @override
   Future<PagedResult<Item>> getItems({
@@ -99,20 +109,42 @@ class ApiItemRepository implements ItemRepository {
     List<String> filePaths, {
     void Function(double progress)? onProgress,
   }) async {
-    final form = FormData.fromMap({
-      'files': [for (final path in filePaths) await MultipartFile.fromFile(path)],
-    });
+    // Sırayla sıkıştırılır: aynı anda beş büyük fotoğraf belleği zorlamasın.
+    final files = <MultipartFile>[];
+    for (final (i, path) in filePaths.indexed) {
+      files.add(await _prepare(path));
+      onProgress?.call(_compressShare * (i + 1) / filePaths.length);
+    }
+
+    final form = FormData.fromMap({'files': files});
     return _client.send(
       () => _client.dio.post<Object?>(
         '/api/items/$itemId/photos',
         data: form,
-        onSendProgress: (sent, total) =>
-            onProgress?.call(total > 0 ? sent / total : 0),
+        onSendProgress: (sent, total) => onProgress?.call(
+          _compressShare +
+              (1 - _compressShare) * (total > 0 ? sent / total : 0),
+        ),
       ),
       (data) => _parse(
         () => ItemDto.fromDetail(data! as Map<String, dynamic>, _photoUrl),
       ),
     );
+  }
+
+  /// Sıkıştırılmış JPEG; sıkıştırma başarısız olursa özgün dosya gönderilir
+  /// (yükleme sırf bu yüzden durmasın, sunucu boyutu yine denetler).
+  Future<MultipartFile> _prepare(String path) async {
+    try {
+      final photo = await compressor.compress(path);
+      return MultipartFile.fromBytes(
+        photo.bytes,
+        filename: photo.filename,
+        contentType: DioMediaType('image', 'jpeg'),
+      );
+    } catch (_) {
+      return MultipartFile.fromFile(path);
+    }
   }
 
   /// Sunucu fotoğraf adresini göreli (`/uploads/x.jpg`) verebilir;
