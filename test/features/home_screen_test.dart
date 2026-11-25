@@ -174,4 +174,61 @@ void main() {
     await _scrollTo(tester, find.text('İlan 20'));
     expect(find.text('İlan 20'), findsOneWidget);
   });
+
+  testWidgets('filtre: kategoriye göre süzülür, çiple kaldırılır', (
+    tester,
+  ) async {
+    await _pumpHome(tester);
+    await tester.tap(find.text('Bulunan'));
+    await tester.pumpAndSettle();
+    final before = _visibleItems(tester).length;
+
+    await tester.tap(find.byTooltip('Filtrele'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Cüzdan'));
+    await tester.pump();
+    await tester.tap(find.widgetWithText(FilledButton, 'Uygula'));
+    await tester.pumpAndSettle();
+
+    final items = _visibleItems(tester);
+    expect(items, isNotEmpty);
+    expect(items.every((i) => i.category.name == 'Cüzdan'), isTrue);
+    expect(items.every((i) => i.type == ItemType.found), isTrue);
+    expect(find.widgetWithText(InputChip, 'Cüzdan'), findsOneWidget);
+    expect(find.text('1'), findsOneWidget); // filtre rozetindeki sayı
+
+    // Kayıp sekmesi de aynı filtreyle.
+    await tester.tap(find.text('Kayıp'));
+    await tester.pumpAndSettle();
+    expect(
+      _visibleItems(tester).every((i) => i.category.name == 'Cüzdan'),
+      isTrue,
+    );
+
+    await tester.tap(
+      find.descendant(
+        of: find.widgetWithText(InputChip, 'Cüzdan'),
+        matching: find.byIcon(Icons.clear),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(InputChip), findsNothing);
+    await tester.tap(find.text('Bulunan'));
+    await tester.pumpAndSettle();
+    expect(_visibleItems(tester).length, before);
+  });
+
+  testWidgets('filtreye uyan ilan yoksa açıklayıcı boş durum', (tester) async {
+    await _pumpHome(tester, repo: _EmptyFoundRepository());
+    await tester.tap(find.byTooltip('Filtrele'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Cüzdan'));
+    await tester.pump();
+    await tester.tap(find.widgetWithText(FilledButton, 'Uygula'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Bulunan'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Filtrelere uyan ilan yok'), findsOneWidget);
+  });
 }
