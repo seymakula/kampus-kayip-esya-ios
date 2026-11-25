@@ -24,7 +24,15 @@
 		<string>????</string>
 		<key>CFBundleVersion</key>
 		<string>$(FLUTTER_BUILD_NUMBER)</string>
-		<key>LSRequiresIPhoneOS</key>
+		<key>NSCameraUsageDescription</key>
+	<string>Bulduğunuz veya kaybettiğiniz eşyanın fotoğrafını çekmek için kamera kullanılır.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>İlana galerinizden fotoğraf eklemek için fotoğraf arşivine erişilir.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Eşyanın bulunduğu binayı otomatik seçmek için konumunuz kullanılır.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Geliştirme sunucusuna bağlanmak için yerel ağ kullanılır.</string>
+	<key>LSRequiresIPhoneOS</key>
 		<true/>
 		<key>UIApplicationSceneManifest</key>
 		<dict>

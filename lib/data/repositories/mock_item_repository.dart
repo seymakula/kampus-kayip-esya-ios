@@ -63,4 +63,53 @@ class MockItemRepository implements ItemRepository {
     await Future<void>.delayed(latency);
     return mockLocations;
   }
+
+  int _nextId = 1000;
+
+  @override
+  Future<Item> createItem(NewItem item) async {
+    await Future<void>.delayed(latency);
+    final now = DateTime.now().toUtc();
+    return Item(
+      id: ++_nextId,
+      type: item.type,
+      status: ItemStatus.pending,
+      title: item.title,
+      description: item.description,
+      category: mockCategories.firstWhere((c) => c.id == item.categoryId),
+      location: mockLocations.firstWhere((l) => l.id == item.locationId),
+      eventDate: item.eventDate,
+      createdAt: now,
+      isOwner: true,
+      ownerName: 'Şeyma K.',
+      verificationQuestion: item.verificationQuestion,
+    );
+  }
+
+  @override
+  Future<Item> uploadPhotos(
+    int itemId,
+    List<String> filePaths, {
+    void Function(double progress)? onProgress,
+  }) async {
+    for (var i = 1; i <= 4; i++) {
+      await Future<void>.delayed(latency ~/ 4);
+      onProgress?.call(i / 4);
+    }
+    return Item(
+      id: itemId,
+      type: ItemType.found,
+      status: ItemStatus.pending,
+      title: '',
+      category: mockCategories.first,
+      location: mockLocations.first,
+      eventDate: DateTime.now().toUtc(),
+      createdAt: DateTime.now().toUtc(),
+      isOwner: true,
+      photos: [
+        for (final (i, path) in filePaths.indexed)
+          ItemPhoto(id: i, url: 'file://$path', sortOrder: i),
+      ],
+    );
+  }
 }

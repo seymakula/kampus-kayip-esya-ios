@@ -16,6 +16,9 @@ abstract class ItemPhoto with _$ItemPhoto {
 
   bool get isAsset => url.startsWith('assets/');
 
+  /// Telefondan seçilmiş, henüz yüklenmemiş fotoğraf (`file://…`).
+  bool get isFile => url.startsWith('file://');
+
   factory ItemPhoto.fromJson(Map<String, dynamic> json) =>
       _$ItemPhotoFromJson(json);
 }

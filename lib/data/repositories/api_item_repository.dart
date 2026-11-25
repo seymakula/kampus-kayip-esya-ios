@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart';
+
 import '../api/api_client.dart';
 import '../api/app_exception.dart';
 import '../api/item_dto.dart';
@@ -81,6 +83,37 @@ class ApiItemRepository implements ItemRepository {
       ],
     ),
   );
+
+  @override
+  Future<Item> createItem(NewItem item) => _client.post(
+    '/api/items',
+    body: item.toJson(),
+    parse: (data) => _parse(
+      () => ItemDto.fromDetail(data! as Map<String, dynamic>, _photoUrl),
+    ),
+  );
+
+  @override
+  Future<Item> uploadPhotos(
+    int itemId,
+    List<String> filePaths, {
+    void Function(double progress)? onProgress,
+  }) async {
+    final form = FormData.fromMap({
+      'files': [for (final path in filePaths) await MultipartFile.fromFile(path)],
+    });
+    return _client.send(
+      () => _client.dio.post<Object?>(
+        '/api/items/$itemId/photos',
+        data: form,
+        onSendProgress: (sent, total) =>
+            onProgress?.call(total > 0 ? sent / total : 0),
+      ),
+      (data) => _parse(
+        () => ItemDto.fromDetail(data! as Map<String, dynamic>, _photoUrl),
+      ),
+    );
+  }
 
   /// Sunucu fotoğraf adresini göreli (`/uploads/x.jpg`) verebilir;
   /// ekranlar her zaman mutlak adres görür.
